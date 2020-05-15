@@ -35,6 +35,8 @@ class SaveJSON extends SaveInterface {
       }
     } else if (item instanceof Serializable) {
       obj[key] = item.serialize();
+    } else {
+      obj[key] = item;
     }
     return true;
   }

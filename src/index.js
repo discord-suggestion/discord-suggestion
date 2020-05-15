@@ -1,6 +1,6 @@
 const Discord = require('discord.js');
 const fs = require('fs').promises;
-const ChannelStore = require('./structs/ChannelStore.js');
+const StorageWithDefault = require('./structs/StorageWithDefault.js');
 const { errorWrap } = require('./util.js');
 const { setDebugFlag, debugLog, verbooseLog } = require('./debug.js');
 
@@ -17,7 +17,11 @@ const client = new Discord.Client({
 });
 
 Object.defineProperties(client, {
-  channelStore: { value: new ChannelStore('_channel_store.json') },
+  guildStore: { value: new StorageWithDefault('_guild_store.json', {
+    channels: {},
+    blacklist: {}
+  }) },
+  messageStore: { value: new StorageWithDefault('_message_store.json') },
   commands: { value: new Map() },
   config: { value: {
     prefix: '!',
@@ -97,7 +101,8 @@ async function start(config) {
   debugLog('DEVELOPER LOGS ENABLED');
   verbooseLog('VERBOOSE LOGS ENABLED');
   await loadCommands();
-  await client.channelStore.load();
+  await client.guildStore.load();
+  await client.messageStore.load();
   await client.login(config.key);
   return client;
 }

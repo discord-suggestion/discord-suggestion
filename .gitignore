@@ -3,5 +3,6 @@ node_modules/
 
 # Project
 trigger-run.js
-_channel_store.json
+_guild_store.json
+_message_store.json
 start.sh

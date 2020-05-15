@@ -47,3 +47,36 @@ exports.extendPrototype = function(classVar, methods) {
     });
   }
 }
+
+// Externeous type checking
+const is = {
+  discordMention: function(text) {
+    return is.discordReference(text, '<@', ['!', '&']);
+  },
+  discordChannel: function(text) {
+    return is.discordReference(text, '<#', []);
+  },
+  discordReference: function(text, start, extras) {
+    let toCheck = text;
+    if (text.startsWith(start)) {
+      let start = 2;
+      if (extras.includes(text[2])) start = 3;
+      toCheck = text.substr(start, text.length-start-1);
+    }
+    if (is.discordSnowflake(toCheck)) {
+      return toCheck; // Return snowflake ID if found
+    }
+    return undefined;
+  },
+  discordSnowflake: function(text) {
+    return text.length > 0 && text.length <= 20 && is.stringOfNums(text);
+  },
+  stringOfNums: function(text) {
+    for (let i=0; i<text.length; i++) {
+      let n = text.charCodeAt(i);
+      if (n < 48 || n > 57) return false; // '0' | '9'
+    }
+    return true;
+  }
+}
+exports.is = is;
