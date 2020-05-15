@@ -1,6 +1,5 @@
 const fs = require('fs').promises;
 const SaveInterface = require('./SaveInterface.js');
-const Update = require('../Update.js');
 const Serializable = require('../Serializable.js');
 const { allSettled, isOfBaseType } = require('../../util.js');
 
@@ -10,12 +9,12 @@ class SaveJSON extends SaveInterface {
     this.filename = filename;
   }
 
-  async save(updateCache) {
-    if (!this.isUpdateCache(updateCache)) throw new Error('Must provide an UpdateCache object');
+  async save(dataStore) {
+    if (!this.isMap(dataStore)) throw new Error('Must provide a Map object');
     let obj = {};
 
     let promises = [];
-    for (let [key, item] of updateCache.entries()) {
+    for (let [key, item] of dataStore.entries()) {
       promises.push(this.saveItem(obj, key, item));
     }
     await allSettled(promises);
@@ -40,32 +39,32 @@ class SaveJSON extends SaveInterface {
     return true;
   }
 
-  async load(updateCache) {
-    if (!this.isUpdateCache(updateCache)) throw new Error('Must provide an UpdateCache object');
+  async load(dataStore) {
+    if (!this.isMap(dataStore)) throw new Error('Must provide a Map object');
 
     let content = await fs.readFile(this.filename);
     let obj = JSON.parse(content);
 
     let promises = [];
     for (let [key, item] of Object.entries(obj)) {
-      promises.push(this.loadItem(updateCache, key, item));
+      promises.push(this.loadItem(dataStore, key, item));
     }
     let res = await allSettled(promises), errs = res.filter(v => v !== true);
     console.log(`Loaded ${promises.length} configs...`);
     if (errs.length > 0) console.error(errs);
   }
 
-  async loadItem(updateCache, key, item) {
+  async loadItem(dataStore, key, item) {
     let res; // NOTE: Type checking here is a bit flippant
     if (isOfBaseType(item, Array)) {
       res = new Array(item.length);
       for (let i=0;i<item.length;i++) {
-        res[i] = Update.parse(item[i]);
+        res[i] = Serializable.parse(item[i]);
       }
     } else {
-      res = Update.parse(item);
+      res = Serializable.parse(item);
     }
-    updateCache.set(key, res, true);
+    dataStore.set(key, res, true);
     return true;
   }
 }

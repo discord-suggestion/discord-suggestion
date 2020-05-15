@@ -5,6 +5,8 @@
   "main": "index.js",
   "author": "Douile",
   "keywords": [],
+  "homepage": "https://github.com/Douile/discord-botbase",
+  "bugs": { "url": "https://github.com/Douile/discord-botbase/issues" },
   "scripts": {
     "test": "npm run lint",
     "lint": "npx eslint src *.js"
