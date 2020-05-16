@@ -73,27 +73,30 @@ client.on(Discord.Constants.Events.MESSAGE_CREATE, errorWrap(async function(mess
 }))
 
 
+/* raw handler used as reaction only works for cached messages */
 client.on('raw', errorWrap(async function(data) {
-  if (data.t !== 'MESSAGE_REACTION_ADD') return;
-  if (!client.guildStore.has(data.d.guild_id)) return;
-  if (!client.guilds.has(data.d.guild_id)) return;
+  if (data.t !== 'MESSAGE_REACTION_ADD') return; /* Check packet event */
+  if (!client.guildStore.has(data.d.guild_id)) return; /* Check message in guild with suggestion channels */
+  if (!client.guilds.has(data.d.guild_id)) return; /* Check guild is in cache */
   const guild = client.guilds.get(data.d.guild_id);
   const guildStore = client.guildStore.get(data.d.guild_id);
 
-  if (!(data.d.channel_id in guildStore.channels)) return;
-  if (!guild.channels.has(data.d.channel_id)) return;
+  if (!(data.d.channel_id in guildStore.channels)) return; /* Check channel is a suggestion channel */
+  if (!guild.channels.has(data.d.channel_id)) return; /* Check channel is in guild */
   const channel = guild.channels.get(data.d.channel_id);
   let message = channel.messages.get(data.d.message_id);
   try {
     message = await channel.fetchMessage(data.d.message_id);
   } catch (e) {};
-  if (message === undefined) return;
+  if (message === undefined) return; /* Check message exists */
 
-  if (!guild.members.has(data.d.user_id)) return;
+  if (message.author.id !== client.user.id) return; /* Check message was sent by this bot */
+  if (!guild.members.has(data.d.user_id)) return; /* Check reactor is a member */
   const member = guild.members.get(data.d.user_id);
-  if (!member.hasPermission(client.config.adminFlag)) return;
+  if (!member.hasPermission(client.config.adminFlag)) return; /* Check reactors permissions */
+  if (message.embeds.length === 0) return; /* Check whether message has an embed */
   if (message.embeds[0].fields.length > 0) return; // This'll do for now to check whether suggestion has been accepted / rejected
-  
+
   const action = data.d.emoji.name === constants.emojis.accept ? true : data.d.emoji.name === constants.emojis.reject ? false : undefined;
   if (action !== undefined) {
     let upvotes = 0, downvotes = 0;
