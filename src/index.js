@@ -45,13 +45,13 @@ Object.defineProperties(client, {
 });
 
 async function loadCommand(file) {
-  const command = require(`./commands/${file}`);
+  const command = require(`${__dirname}/commands/${file}`);
   client.commands.set(command.name.toLowerCase(), {call: command.call, check: command.check, help: command.help});
   console.log(`Loaded command ${command.name}`);
 }
 
 async function loadCommands() {
-  const files = await fs.readdir('./src/commands');
+  const files = await fs.readdir(`${__dirname}/src/commands`);
   /* allSettled not used as we don't want to ignore errors */
   await Promise.all(files.map(loadCommand));
 }
