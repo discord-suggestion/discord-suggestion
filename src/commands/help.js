@@ -28,7 +28,7 @@ const call = async function(message, parts) {
         .map(cmd => {
           return {
             name: `${message.client.config.prefix}${cmd[0]}`,
-            value: isOfBaseType(cmd[1].help, String) ? cmd[1].help : 'No help message provided',
+            value: isOfBaseType(cmd[1].help, String) ? cmd[1].help.replace(/\{command\}/gi, `${message.client.config.prefix}${cmd[0]}`) : 'No help message provided',
             inline: false
           };
         })

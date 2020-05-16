@@ -34,6 +34,9 @@ const setupAndStart = function(key, args) {
       case '--admin':
       config.adminFlag = args[++i];
       break;
+      case '--suggestion-rate':
+      config.suggestionRate = Number(args[++i]);
+      break;
     }
   }
 

@@ -88,3 +88,10 @@ const is = {
   }
 }
 exports.is = is;
+
+exports.hasAny = function(map, keys) {
+  for (let key of keys) {
+    if (map.has(key)) return true;
+  }
+  return false;
+}

@@ -70,15 +70,39 @@ const callBlacklist = async function(message, params) {
   }
 }
 
+// TODO: Make a role add/remove function
+const callManagers = async function(message, params) {
+  const isAdd = addOrRemove(params);
+  let roles = [];
+  for (let param of params) {
+    const tRole = is.discordRole(param);
+    if (tRole !== undefined && message.guild.roles.has(tRole)) roles.push(tRole);
+  }
+  if (roles.length === 0) return await message.channel.send('You must provide a role for managers');
+  if (isAdd) {
+    await message.client.guildStore.update(message.guild.id, function(guild) {
+      guild.managers = guild.managers.concat(roles);
+      return guild;
+    });
+    await message.channel.send(`Added ${roles.map(v => `<@&${v}>`).join(', ')} as manager roles`);
+  } else {
+    await message.client.guildStore.update(message.guild.id, function(guild) {
+      guild.managers = guild.managers.filter(v => !roles.includes(v));
+      return guild;
+    });
+    await message.channel.send(`${roles.map(v => `<@&${v}>`).join(', ')} are no longer managers`);
+  }
+}
+
 const call = async function(message, params) {
   if (params.length === 0) return;
   switch(params[0]) {
     case 'channel':
     return await callChannel(message, params.splice(1));
-    case 'delete':
-    break;
     case 'blacklist':
     return await callBlacklist(message, params.splice(1));
+    case 'managers':
+    return await callManagers(message, params.splice(1));
     default:
     return await message.channel.send(`Unknown command \`${params[0]}\``);
   }
@@ -87,3 +111,7 @@ const call = async function(message, params) {
 exports.name = 'setsuggest';
 exports.call = call;
 exports.check = isAdmin;
+exports.help = 'Configure suggestion options\n\
+  Add/Remove channel: `{command} channel + #channel topic`, `{command} channel - #channel` (_topic must be a single word without spaces_)\n\
+  Add/Remove from blacklist: `{command} blacklist + @role`, `{command} blacklist - @role`\n\
+  Add/Remove manager roles: `{command} managers + @role`, `{command} managers - @role`';

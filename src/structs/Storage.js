@@ -70,7 +70,6 @@ class Storage extends Collection {
   async _update(key, updater, dontSave) {
     let v = updater(this.get(key));
     if (v instanceof Promise) v = await v;
-    console.log(`Updating ${key} to`, v);
     const r = this.set(key, v, dontSave);
     if (r instanceof Promise) await r;
     return r;

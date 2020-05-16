@@ -2,7 +2,7 @@ const Discord = require('discord.js');
 const fs = require('fs').promises;
 
 const StorageWithDefault = require('./structs/StorageWithDefault.js');
-const { errorWrap } = require('./util.js');
+const { errorWrap, hasAny } = require('./util.js');
 const { setDebugFlag, debugLog, verbooseLog } = require('./debug.js');
 const constants = require('./constants.js');
 
@@ -18,16 +18,29 @@ const client = new Discord.Client({
   }
 });
 
+const GUILD_DEFAULTS = {
+  channels: {},
+  blacklist: [],
+  managers: [],
+  users: {}
+};
+
+Object.defineProperty(GUILD_DEFAULTS, 'suggestionRate', {
+  enumerable: true,
+  configurable: false,
+  get: function() {
+    return client.config.suggestionRate;
+  }
+})
+
 Object.defineProperties(client, {
-  guildStore: { value: new StorageWithDefault('_guild_store.json', {
-    channels: {},
-    blacklist: []
-  }) },
+  guildStore: { value: new StorageWithDefault('_guild_store.json', GUILD_DEFAULTS) },
   commands: { value: new Map() },
   config: { value: {
     prefix: '!',
     owner: '293482190031945739',
-    adminFlag: 'ADMINISTRATOR'
+    adminFlag: 'ADMINISTRATOR',
+    suggestionRate: 0x6ddd00 // 2 hours
   } }
 });
 
@@ -87,13 +100,15 @@ client.on('raw', errorWrap(async function(data) {
   let message = channel.messages.get(data.d.message_id);
   try {
     message = await channel.fetchMessage(data.d.message_id);
-  } catch (e) {};
+  } catch (e) {
+    verbooseLog(e);
+  }
   if (message === undefined) return; /* Check message exists */
 
   if (message.author.id !== client.user.id) return; /* Check message was sent by this bot */
   if (!guild.members.has(data.d.user_id)) return; /* Check reactor is a member */
   const member = guild.members.get(data.d.user_id);
-  if (!member.hasPermission(client.config.adminFlag)) return; /* Check reactors permissions */
+  if (!(member.hasPermission(client.config.adminFlag) || hasAny(member.roles, guildStore.managers))) return; /* Check reactors permissions */
   if (message.embeds.length === 0) return; /* Check whether message has an embed */
   if (message.embeds[0].fields.length > 0) return; // This'll do for now to check whether suggestion has been accepted / rejected
 
