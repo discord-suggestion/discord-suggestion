@@ -1,6 +1,9 @@
 const { RichEmbed } = require('discord.js');
 
-const reactions = ['👍','👎'];
+const { emojis } = require('../constants.js');
+const { isNotBlacklisted } = require('../checks.js');
+
+const reactions = [emojis.upvote, emojis.downvote];
 
 const call = async function(message, params) {
   if (params.length < 2) return;
@@ -23,11 +26,15 @@ const call = async function(message, params) {
     for (let r of reactions) {
       await sMessage.react(r);
     }
-    await message.delete();
+    await message.channel.send(`Suggestion created <https://discordapp.com/channels/${sMessage.guild.id}/${sMessage.channel.id}/${sMessage.id}>`);
   } else {
-    await message.channel.send(`Sorry there is no suggestion channel for that gamemode`);
+    await message.channel.send(new RichEmbed({
+      title: `Sorry there is no suggestion channel for that topic`,
+      description: `Valid topics: ${Object.values(guild.channels).map(v => `\`${v.topic}\``).join(', ')}`
+    }));
   }
 }
 
 exports.name = 'suggest';
 exports.call = call;
+exports.check = isNotBlacklisted;

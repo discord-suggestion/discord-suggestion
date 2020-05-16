@@ -11,3 +11,21 @@ exports.isOwner = function(message) {
 exports.isBotOwner = function(message) {
   return message.client.config.owner === message.author.id;
 }
+
+exports.isNotBlacklisted = function(message) {
+  if (!message.member) return false;
+  for (let role of message.client.guildStore.get(message.guild.id).blacklist) {
+    if (message.member.roles.has(role)) return false;
+  }
+  return true;
+}
+
+exports.combine = function() {
+  const checks = Array.from(arguments);
+  return function(message) {
+    for (let check of checks) {
+      if (!check(message)) return false;
+    }
+    return true;
+  }
+}

@@ -1,8 +1,10 @@
 const Discord = require('discord.js');
 const fs = require('fs').promises;
+
 const StorageWithDefault = require('./structs/StorageWithDefault.js');
 const { errorWrap } = require('./util.js');
 const { setDebugFlag, debugLog, verbooseLog } = require('./debug.js');
+const constants = require('./constants.js');
 
 const INVITE_FLAGS = [ 'VIEW_AUDIT_LOG', 'VIEW_CHANNEL', 'SEND_MESSAGES', 'MANAGE_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY', 'ADD_REACTIONS' ];
 
@@ -19,9 +21,8 @@ const client = new Discord.Client({
 Object.defineProperties(client, {
   guildStore: { value: new StorageWithDefault('_guild_store.json', {
     channels: {},
-    blacklist: {}
+    blacklist: []
   }) },
-  messageStore: { value: new StorageWithDefault('_message_store.json') },
   commands: { value: new Map() },
   config: { value: {
     prefix: '!',
@@ -72,6 +73,46 @@ client.on(Discord.Constants.Events.MESSAGE_CREATE, errorWrap(async function(mess
 }))
 
 
+client.on('raw', errorWrap(async function(data) {
+  if (data.t !== 'MESSAGE_REACTION_ADD') return;
+  if (!client.guildStore.has(data.d.guild_id)) return;
+  if (!client.guilds.has(data.d.guild_id)) return;
+  const guild = client.guilds.get(data.d.guild_id);
+  const guildStore = client.guildStore.get(data.d.guild_id);
+
+  if (!(data.d.channel_id in guildStore.channels)) return;
+  if (!guild.channels.has(data.d.channel_id)) return;
+  const channel = guild.channels.get(data.d.channel_id);
+  let message = channel.messages.get(data.d.message_id);
+  try {
+    message = await channel.fetchMessage(data.d.message_id);
+  } catch (e) {};
+  if (message === undefined) return;
+
+  if (!guild.members.has(data.d.user_id)) return;
+  const member = guild.members.get(data.d.user_id);
+  if (!member.hasPermission(client.config.adminFlag)) return;
+  if (message.embeds[0].fields.length > 0) return; // This'll do for now to check whether suggestion has been accepted / rejected
+  
+  const action = data.d.emoji.name === constants.emojis.accept ? true : data.d.emoji.name === constants.emojis.reject ? false : undefined;
+  if (action !== undefined) {
+    let upvotes = 0, downvotes = 0;
+    for (let reaction of message.reactions.values()) {
+      if (reaction.emoji.name === constants.emojis.upvote) {
+        upvotes = reaction.count-1;
+      } else if (reaction.emoji.name === constants.emojis.downvote) {
+        downvotes = reaction.count-1;
+      }
+    }
+    const embed = new Discord.RichEmbed(message.embeds[0]);
+    embed.setColor(action ? 0x00ff00 : 0xff0000);
+    embed.addField(action ? 'Accepted' : 'Rejected', `${upvotes} ${constants.emojis.upvote} : ${downvotes} ${constants.emojis.downvote}`, true);
+    await message.clearReactions();
+    await message.edit(embed);
+  }
+}));
+
+
 client.on(Discord.Constants.Events.READY, errorWrap(async function() {
   console.log(`Logged in ${client.user.username} [${client.user.id}]...`);
   let invite = await client.generateInvite(INVITE_FLAGS);
@@ -102,7 +143,6 @@ async function start(config) {
   verbooseLog('VERBOOSE LOGS ENABLED');
   await loadCommands();
   await client.guildStore.load();
-  await client.messageStore.load();
   await client.login(config.key);
   return client;
 }

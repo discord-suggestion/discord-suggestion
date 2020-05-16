@@ -53,15 +53,23 @@ const is = {
   discordMention: function(text) {
     return is.discordReference(text, '<@', ['!', '&']);
   },
+  discordRole: function(text) {
+    return is.discordReference(text, '<@&', []);
+  },
   discordChannel: function(text) {
     return is.discordReference(text, '<#', []);
   },
   discordReference: function(text, start, extras) {
     let toCheck = text;
     if (text.startsWith(start)) {
-      let start = 2;
-      if (extras.includes(text[2])) start = 3;
-      toCheck = text.substr(start, text.length-start-1);
+      let begin = start.length;
+      for (let extra of extras) {
+        if (text.substr(begin, extra.length) === extra) {
+          begin += extra.length;
+          break;
+        }
+      }
+      toCheck = text.substr(begin, text.length-begin-1);
     }
     if (is.discordSnowflake(toCheck)) {
       return toCheck; // Return snowflake ID if found

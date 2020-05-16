@@ -47,14 +47,38 @@ const callChannel = async function(message, params) {
   }
 }
 
+const callBlacklist = async function(message, params) {
+  const isAdd = addOrRemove(params);
+  let roles = [];
+  for (let param of params) {
+    const tRole = is.discordRole(param);
+    if (tRole !== undefined && message.guild.roles.has(tRole)) roles.push(tRole);
+  }
+  if (roles.length === 0) return await message.channel.send('You must provide a role to blacklist');
+  if (isAdd) {
+    await message.client.guildStore.update(message.guild.id, function(guild) {
+      guild.blacklist = guild.blacklist.concat(roles);
+      return guild;
+    });
+    await message.channel.send(`Blacklisted ${roles.map(v => `<@&${v}>`).join(', ')}`);
+  } else {
+    await message.client.guildStore.update(message.guild.id, function(guild) {
+      guild.blacklist = guild.blacklist.filter(v => !roles.includes(v));
+      return guild;
+    });
+    await message.channel.send(`Unblacklisted ${roles.map(v => `<@&${v}>`).join(', ')}`);
+  }
+}
+
 const call = async function(message, params) {
   if (params.length === 0) return;
   switch(params[0]) {
     case 'channel':
     return await callChannel(message, params.splice(1));
     case 'delete':
-    case 'blacklist':
     break;
+    case 'blacklist':
+    return await callBlacklist(message, params.splice(1));
     default:
     return await message.channel.send(`Unknown command \`${params[0]}\``);
   }
