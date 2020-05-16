@@ -1,6 +1,0 @@
-apps:
-  - script  : './index.js'
-    name    : 'Discord Suggestion bot'
-    env     :
-      DISCORD_API_KEY: key
-    args    : '--prefix ! --owner 293482190031945739 --admin ADMINISTRATOR --suggestion-rate 0x6ddd00'
