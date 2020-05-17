@@ -1,4 +1,5 @@
-const { RichEmbed } = require('discord.js');
+const { Attachment, RichEmbed } = require('discord.js');
+const fetch = require('node-fetch');
 
 const { emojis } = require('../constants.js');
 const { isNotBlacklisted } = require('../checks.js');
@@ -33,15 +34,57 @@ const call = async function(message, params) {
     const rMessage = await message.channel.send('Creating suggestion...');
     const channelTopic = channel[0][1].topic;
     channel = message.guild.channels.get(channel[0][0]);
+
+    const suggestion = params.join(' ');
+
     const embed = new RichEmbed({
       author: { name: message.author.username, icon_url: message.author.avatarURL },
       title: `${channelTopic} suggestion`,
-      description: params.join(' '),
+      description: suggestion,
       timestamp: now
     });
+    let hasImage = false, attachments = [];
+    if (message.attachments.size > 0) {
+      for (let attachment of message.attachments.values()) {
+        let res;
+        try {
+          res = await fetch(attachment.url, { method: 'HEAD'});
+        } catch(e) {
+          attachments.push(attachment.url);
+          continue;
+        }
+
+        if (!hasImage && res.headers.get('Content-Type').startsWith('image/')) {
+          hasImage = true;
+          embed.setImage(attachment.url);
+        } else {
+          attachments.push(attachment.url);
+        }
+      }
+    }
+    if (attachments.length > 0) {
+      embed.setDescription(`${suggestion}\n\n**Attachments**\n${attachments.join('\n')}`);
+    }
+    if (!hasImage) {
+      // Thanks regexr regexr.com/2ri7q
+      const matches = suggestion.match(/((\w+:\/\/)[-a-zA-Z0-9:@;?&=\/%\+\.\*!'\(\),\$_\{\}\^~\[\]`#|]+)/g);
+      if (matches !== null) {
+        for (let link of matches) {
+          let res;
+          try {
+            res = await fetch(link, { method: 'HEAD' });
+          } catch(e) {
+            continue;
+          }
+          if (res.headers.get('Content-Type').startsWith('image/')) {
+            embed.setImage(link);
+            break;
+          }
+        }
+      }
+    }
+
     const sMessage = await channel.send(embed);
-    embed.setFooter(`#${sMessage.id}`);
-    await sMessage.edit(embed);
     for (let r of reactions) {
       await sMessage.react(r);
     }

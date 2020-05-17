@@ -6,7 +6,9 @@
   "author": "Douile",
   "keywords": [],
   "homepage": "https://github.com/discord-suggestion/discord-suggestion",
-  "bugs": { "url": "https://github.com/discord-suggestion/discord-suggestion/issues" },
+  "bugs": {
+    "url": "https://github.com/discord-suggestion/discord-suggestion/issues"
+  },
   "scripts": {
     "test": "npm run lint",
     "lint": "npx eslint src *.js"
@@ -16,7 +18,8 @@
     "node": ">=10.0.0"
   },
   "dependencies": {
-    "discord.js": "^11.6.4"
+    "discord.js": "^11.6.4",
+    "node-fetch": "^2.6.0"
   },
   "devDependencies": {
     "eslint": "^6.8.0"
