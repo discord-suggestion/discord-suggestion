@@ -4,3 +4,8 @@ exports.emojis = {
   'accept': '✅',
   'reject': '❌'
 }
+
+exports.commandSymbols = {
+  add: ['+','add'],
+  remove: ['-','remove']
+}

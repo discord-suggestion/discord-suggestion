@@ -1,4 +1,4 @@
-const { Attachment, RichEmbed } = require('discord.js');
+const { RichEmbed } = require('discord.js');
 const fetch = require('node-fetch');
 
 const { emojis } = require('../constants.js');
@@ -16,8 +16,9 @@ const call = async function(message, params) {
     let nextTime = undefined;
     const now = Date.now();
     await message.client.guildStore.update(message.guild.id, function(guildData) {
+      const rate = isNaN(guildData.suggestionRate) ? message.client.config.suggestionRate : guildData.suggestionRate;
       if (message.author.id in guildData.users) {
-        const t = guildData.users[message.author.id].lastSuggestion + guildData.suggestionRate;
+        const t = guildData.users[message.author.id].lastSuggestion + rate;
         if (t > now) {
           nextTime = t;
         } else {
@@ -29,7 +30,7 @@ const call = async function(message, params) {
       return guildData;
     });
 
-    if (nextTime !== undefined) return await message.channel.send(`Sorry you must wait ${Math.round((nextTime-now)/1000,2)} seconds before creating another suggestion`);
+    if (nextTime !== undefined) return await message.channel.send(`Sorry you must wait ${Math.round((nextTime-now)/1000,2)} seconds before creating another suggestion`); // TODO: Humanify duration
 
     const rMessage = await message.channel.send('Creating suggestion...');
     const channelTopic = channel[0][1].topic;
@@ -67,7 +68,7 @@ const call = async function(message, params) {
     }
     if (!hasImage) {
       // Thanks regexr regexr.com/2ri7q
-      const matches = suggestion.match(/((\w+:\/\/)[-a-zA-Z0-9:@;?&=\/%\+\.\*!'\(\),\$_\{\}\^~\[\]`#|]+)/g);
+      const matches = suggestion.match(/((\w+:\/\/)[-a-zA-Z0-9:@;?&=/%+.*!'(),$_{}^~[\]`#|]+)/g);
       if (matches !== null) {
         for (let link of matches) {
           let res;

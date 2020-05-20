@@ -40,7 +40,7 @@ Object.defineProperties(client, {
     prefix: '!',
     owner: '293482190031945739',
     adminFlag: 'ADMINISTRATOR',
-    suggestionRate: 0x6ddd00 // 2 hours
+    suggestionRate: undefined // 2 hours
   } }
 });
 
