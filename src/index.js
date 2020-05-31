@@ -124,7 +124,7 @@ client.on('raw', errorWrap(async function(data) {
     }
     const embed = new Discord.RichEmbed(message.embeds[0]);
     embed.setColor(action ? 0x00ff00 : 0xff0000);
-    embed.addField(action ? 'Accepted' : 'Rejected', `${upvotes} ${constants.emojis.upvote} : ${downvotes} ${constants.emojis.downvote}`, true);
+    embed.addField(`_ _`, `${action ? 'Accepted' : 'Rejected'} by <@!${member.id}>\nVerdict: ${upvotes} ${constants.emojis.upvote} : ${downvotes} ${constants.emojis.downvote}`, true);
     await message.clearReactions();
     await message.edit(embed);
   }
