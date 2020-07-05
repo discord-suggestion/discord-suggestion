@@ -28,11 +28,6 @@ class SaveJSON extends SaveInterface {
       for (let i=0;i<item.length;i++) {
         await this.saveItem(obj[key], i, item[i]);
       }
-    } else if (isOfBaseType(item, Object)) { // NOTE: Maybe we shouldn't deal with this cases as Serializables are transformed into objects
-      obj[key] = {};
-      for (let i in item) {
-        await this.saveItem(obj[key], i, item[i]);
-      }
     } else if (item instanceof Serializable) {
       obj[key] = item.serialize();
     } else {

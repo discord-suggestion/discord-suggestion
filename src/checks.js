@@ -20,6 +20,10 @@ exports.isNotBlacklisted = function(message) {
   return true;
 }
 
+exports.isPollWhitelisted = function(message) {
+  return true;
+}
+
 exports.combine = function() {
   const checks = Array.from(arguments);
   return function(message) {

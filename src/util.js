@@ -18,10 +18,11 @@ exports.allSettled = function(promises) {
 }
 
 /* Wrap async or promise functions and handle errors */
-exports.errorWrap = function(callable) {
+exports.errorWrap = function(callable, onError) {
   return function() {
     return callable.apply(this,arguments).then(null).catch(function(...e) {
       console.error(`Encountered error running ${callable.name}`, ...e);
+      if (exports.isOfBaseType(onError, Function)) onError.apply(this, e);
     })
   }
 }
@@ -94,4 +95,40 @@ exports.hasAny = function(map, keys) {
     if (map.has(key)) return true;
   }
   return false;
+}
+
+exports.parseTime = function(time)  {
+  let res = 0;
+  for (let part of time.matchAll(/([0-9]+)([a-z]?)/ig)) {
+    const n = parseInt(part[1]);
+    switch(part[2].toLowerCase()) {
+      case 'w':
+      res += n * 604800000;
+      break;
+      case 'd':
+      res += n * 86400000;
+      break;
+      case 'h':
+      res += n * 3600000;
+      break;
+      case 'm':
+      res += n * 60000;
+      break;
+      case 's':
+      default:
+      res += n * 1000;
+      break;
+    }
+  }
+  return res;
+}
+
+exports.numberEmoji = function(n) {
+  if (isNaN(n) || n < 0 || n > 10) return '❓';
+	if (n === 10) return String.fromCodePoint(0x1f51f)
+	return [
+		String.fromCharCode(48+n),
+		String.fromCharCode(65039),
+		String.fromCharCode(8419)
+	].join('');
 }

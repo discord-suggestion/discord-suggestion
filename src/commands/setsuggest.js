@@ -61,52 +61,34 @@ const callChannel = async function(message, params) {
   }
 }
 
-const callBlacklist = async function(message, params) {
-  const isAdd = addOrRemove(params);
-  let roles = [];
-  for (let param of params) {
-    const tRole = is.discordRole(param);
-    if (tRole !== undefined && message.guild.roles.has(tRole)) roles.push(tRole);
-  }
-  if (roles.length === 0) return await errorResponse(message, 'You must provide a role to blacklist');
-  if (isAdd) {
-    await message.client.guildStore.update(message.guild.id, function(guild) {
-      guild.blacklist = guild.blacklist.concat(roles);
-      return guild;
-    });
-    await embedResponse(message, `Blacklisted ${roles.map(v => `<@&${v}>`).join(', ')}`);
-  } else {
-    await message.client.guildStore.update(message.guild.id, function(guild) {
-      guild.blacklist = guild.blacklist.filter(v => !roles.includes(v));
-      return guild;
-    });
-    await embedResponse(message, `Unblacklisted ${roles.map(v => `<@&${v}>`).join(', ')}`);
+const roleManageTemplate = function(key, name) {
+  return async function(message, params) {
+    const isAdd = addOrRemove(params);
+    let roles = [];
+    for (let param of params) {
+      const tRole = is.discordRole(param);
+      if (tRole !== undefined && message.guild.roles.has(tRole)) roles.push(tRole);
+    }
+    if (roles.length === 0) return await errorResponse(message, `You must provide at least 1 role to add to ${name}`);
+    if (isAdd) {
+      await message.client.guildStore.update(message.guild.id, function(guild) {
+        guild[key] = guild[key].concat(roles);
+        return guild;
+      });
+      await embedResponse(message, `${roles.map(v => `<@&${v}>`).join(', ')} added to ${name}`);
+    } else {
+      await message.client.guildStore.update(message.guild.id, function(guild) {
+        guild.blacklist = guild.blacklist.filter(v => !roles.includes(v));
+        return guild;
+      });
+      await embedResponse(message, `${roles.map(v => `<@&${v}>`).join(', ')} removed from ${name}`);
+    }
   }
 }
 
-// TODO: Make a role add/remove function
-const callManagers = async function(message, params) {
-  const isAdd = addOrRemove(params);
-  let roles = [];
-  for (let param of params) {
-    const tRole = is.discordRole(param);
-    if (tRole !== undefined && message.guild.roles.has(tRole)) roles.push(tRole);
-  }
-  if (roles.length === 0) return await errorResponse(message, 'You must provide a role for managers');
-  if (isAdd) {
-    await message.client.guildStore.update(message.guild.id, function(guild) {
-      guild.managers = guild.managers.concat(roles);
-      return guild;
-    });
-    await embedResponse(message, `Added ${roles.map(v => `<@&${v}>`).join(', ')} as manager roles`);
-  } else {
-    await message.client.guildStore.update(message.guild.id, function(guild) {
-      guild.managers = guild.managers.filter(v => !roles.includes(v));
-      return guild;
-    });
-    await embedResponse(message, `${roles.map(v => `<@&${v}>`).join(', ')} are no longer managers`);
-  }
-}
+const callBlacklist = roleManageTemplate('blacklist','allowlist');
+const callManagers = roleManageTemplate('managers', 'managers');
+const callPollWhitelist = roleManageTemplate('pollWhitelist','poll allowlist');
 
 const callTimeout = async function(message, params) {
   let newTimeout = undefined;
@@ -155,27 +137,56 @@ const callList = async function(message, params) {
 // TODO: Put help messages in this object
 const SUBCOMMANDS = {
   channel: {
-    call: callChannel
+    cmds: ['channel','channels'],
+    call: callChannel,
+    help: 'Add/Remove channel: `{command} channel + #channel topic`, `{command} channel - #channel` (_topic must be a single word without spaces_)'
   },
   blacklist: {
-    call: callBlacklist
+    cmds: ['denylist','blacklist'],
+    call: callBlacklist,
+    help: 'Add/Remove from denylist: `{command} denylist + @role`, `{command} denylist - @role`'
   },
   managers: {
-    call: callManagers
+    cmds: ['manager','managers'],
+    call: callManagers,
+    help: 'Add/Remove manager roles: `{command} managers + @role`, `{command} managers - @role`'
+
+  },
+  pollWhitelist: {
+    cmds: ['polllist','pollallowlist', 'pollwhitelist'],
+    call: callPollWhitelist,
   },
   timeout: {
-    call: callTimeout
+    cmds: ['timeout', 'time', 'ratelimit'],
+    call: callTimeout,
+    help: 'Set suggestion timeout: `{command} timeout length` (_length in ms; leave blank for the bot default_)'
   },
   list: {
-    call: callList
+    cmds: ['list'],
+    call: callList,
+    help: 'List settings: `{command} list setting` (_omit setting for a list of available settings_)'
   }
 };
+
+const generateHelp = function(title, commands) {
+  let message = `${title}\n`;
+  for (let cmd in commands) {
+    if ('help' in commands[cmd]) {
+      message += `${commands[cmd].help}\n`;
+    } else {
+      message += `No help message: \`{command} ${commands[cmd].cmds[0]}\`\n`;
+    }
+  }
+  return message;
+}
 
 const call = async function(message, params) {
   if (params.length === 0) return;
   const subcmd = params.splice(0,1)[0].toLowerCase();
-  if (subcmd in SUBCOMMANDS) {
-    return await SUBCOMMANDS[subcmd].call(message, params);
+  for (let cmd in SUBCOMMANDS) {
+    if (SUBCOMMANDS[cmd].cmds.includes(subcmd)) {
+      return await SUBCOMMANDS[cmd].call(message, params);
+    }
   }
   return await errorResponse(message, `Unknown command \`${subcmd}\``);
 }
@@ -183,9 +194,4 @@ const call = async function(message, params) {
 exports.name = 'setsuggest';
 exports.call = call;
 exports.check = isAdmin;
-exports.help = 'Configure suggestion options\n\
-  Add/Remove channel: `{command} channel + #channel topic`, `{command} channel - #channel` (_topic must be a single word without spaces_)\n\
-  Add/Remove from blacklist: `{command} blacklist + @role`, `{command} blacklist - @role`\n\
-  Add/Remove manager roles: `{command} managers + @role`, `{command} managers - @role`\n\
-  Set suggestion timeout: `{command} timeout length` (_length in ms; leave blank for the bot default_)\n\
-  List settings: `{command} list setting` (_omit setting for a list of available settings_)';
+exports.help = generateHelp('**Configure suggestion options**', SUBCOMMANDS);

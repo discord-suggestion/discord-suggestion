@@ -5,6 +5,8 @@ const StorageWithDefault = require('./structs/StorageWithDefault.js');
 const { errorWrap, hasAny } = require('./util.js');
 const { setDebugFlag, debugLog, verbooseLog } = require('./debug.js');
 const constants = require('./constants.js');
+const WaitManager = require('./structs/WaitManager.js');
+const Poll = require('./structs/Poll.js');
 
 const INVITE_FLAGS = [ 'VIEW_AUDIT_LOG', 'VIEW_CHANNEL', 'SEND_MESSAGES', 'MANAGE_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY', 'ADD_REACTIONS' ];
 
@@ -22,7 +24,8 @@ const GUILD_DEFAULTS = {
   channels: {},
   blacklist: [],
   managers: [],
-  users: {}
+  users: {},
+  polls: {}
 };
 
 Object.defineProperty(GUILD_DEFAULTS, 'suggestionRate', {
@@ -36,6 +39,7 @@ Object.defineProperty(GUILD_DEFAULTS, 'suggestionRate', {
 Object.defineProperties(client, {
   guildStore: { value: new StorageWithDefault('_guild_store.json', GUILD_DEFAULTS) },
   commands: { value: new Map() },
+  waitManager: { value: new WaitManager(client) },
   config: { value: {
     prefix: '!',
     owner: '293482190031945739',
@@ -54,6 +58,26 @@ async function loadCommands() {
   const files = await fs.readdir(`${__dirname}/commands`);
   /* allSettled not used as we don't want to ignore errors */
   await Promise.all(files.map(loadCommand));
+}
+
+async function setupPoll(guildID) {
+  const toRun = [];
+  await client.guildStore.update(guildID, function(guild) {
+    for (let key in guild.polls) {
+      guild.polls[key] = new Poll(client, guild.polls[key]);
+      toRun.push(guild.polls[key].registerWait.bind(guild.polls[key]));
+    }
+    return guild;
+  }, true);
+  await Promise.all(toRun.map(f => f()));
+}
+
+async function setupPolls() {
+  const promises = [];
+  for (let key of client.guildStore.keys()) {
+    promises.push(setupPoll(key));
+  }
+  await Promise.all(promises);
 }
 
 client.on(Discord.Constants.Events.MESSAGE_CREATE, errorWrap(async function(message) {
@@ -135,6 +159,7 @@ client.on(Discord.Constants.Events.READY, errorWrap(async function() {
   console.log(`Logged in ${client.user.username} [${client.user.id}]...`);
   let invite = await client.generateInvite(INVITE_FLAGS);
   console.log(`Invite link ${invite}`);
+  await setupPolls();
 }))
 
 client.on(Discord.Constants.Events.RATE_LIMIT, debugLog);
