@@ -104,4 +104,11 @@ const call = async function(message) {
 exports.name = 'poll';
 exports.call = call;
 exports.check = isPollWhitelisted;
-exports.help = '';
+exports.help = 'Create a poll `{command} title;option;option;set=value`\n\
+Seperate all arguments with a `;`\n\
+The first non-setting argument is the description and the following are used as options (in order)\n\
+Setting arguments are set using key=value e.g. `title=My poll`\n\
+Valid setting arguments are:\n\
+- time : number followed by size (week: w, day: d, hours: h, minutes: m, seconds: s) e.g. `time=1w 4d 2h` for 1 week 4 days and 2 hours\n\
+- title : the title e.g. `title=My poll`\n\
+- color : number for color e.g. `color=0xff0000` for red';
