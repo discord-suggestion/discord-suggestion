@@ -25,6 +25,7 @@ const GUILD_DEFAULTS = {
   blacklist: [],
   managers: [],
   users: {},
+  pollWhitelist: [],
   polls: {}
 };
 

@@ -1,11 +1,9 @@
 const { Collection } = require('discord.js');
 
 class WaitManager {
-  client = undefined;
-  waiters = new Collection();
-
   constructor(client) {
     this.client = client;
+    this.waiters = new Collection();
   }
 
   registerWait(id, handler, time) {

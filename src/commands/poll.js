@@ -42,12 +42,15 @@ const parseArgs = function(content) {
     color: undefined
   };
   for (let i=0;i<partsL;i++) {
-    const opt = parts[i].match(/^([a-z\-]+)=(.+)$/i);
+    const opt = parts[i].match(/^([a-z-]+)=(.+)$/i);
     if (opt === null) {
-      if (res.description === null) {
-        res.description = parts[i].trim();
-      } else {
-        res.options.push(parts[i].trim());
+      const value = parts[i].trim();
+      if (value.length > 0) {
+        if (res.description === null) {
+          res.description = value;
+        } else {
+          res.options.push(value);
+        }
       }
     } else {
       const t = opt[1].toLowerCase();

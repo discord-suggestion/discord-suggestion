@@ -86,7 +86,7 @@ const roleManageTemplate = function(key, name) {
   }
 }
 
-const callBlacklist = roleManageTemplate('blacklist','allowlist');
+const callBlacklist = roleManageTemplate('blacklist','denylist');
 const callManagers = roleManageTemplate('managers', 'managers');
 const callPollWhitelist = roleManageTemplate('pollWhitelist','poll allowlist');
 
@@ -103,22 +103,24 @@ const callTimeout = async function(message, params) {
   await embedResponse(message, `Set guild suggestion timeout to ${newTimeout === undefined ? 'bot default' : newTimeout}`);
 }
 
+const roleList = function(key, name) {
+  return async function(message) {
+    if (!message.client.guildStore.has(message.guild.id)) return await embedResponse(message, `There are no ${name} roles setup in this guild`, { title: name });
+    const guild = message.client.guildStore.get(message.guild.id);
+    if (guild[key].length === 0) return await embedResponse(message, `There are no ${name} roles setup in this guild`, { title: name });
+    await embedResponse(message, guild[key].map(id => `<@&${id}> [\`${id}\`]`).join(', '), { title: name });
+  }
+}
+
 const LISTS = {
   channels: async function(message) {
-    if (!message.client.guildStore.has(message.guild.id)) return await embedResponse(message, 'There are no suggestion channels setup in this guild', { title: 'Channels' }); // TODO: Output same response if there is no data (length = 0)
+    if (!message.client.guildStore.has(message.guild.id)) return await embedResponse(message, 'There are no suggestion channels setup in this guild', { title: 'Channels' });
     const guild = message.client.guildStore.get(message.guild.id);
     await embedResponse(message, Object.entries(guild.channels).map(e => `<#${e[0]}> : \`${e[1].topic}\``).join('\n'), { title: 'Channels' });
   },
-  managers: async function(message) {
-    if (!message.client.guildStore.has(message.guild.id)) return await embedResponse(message, 'There are no manager roles setup in this guild', { title: 'Managers' });
-    const guild = message.client.guildStore.get(message.guild.id);
-    await embedResponse(message, guild.managers.map(id => `<@&${id}> [\`${id}\`]`).join(', '), { title: 'Managers' });
-  },
-  blacklist: async function(message) {
-    if (!message.client.guildStore.has(message.guild.id)) return await embedResponse(message, 'There are roles blacklisted in this guild', { title: 'Blacklist' });
-    const guild = message.client.guildStore.get(message.guild.id);
-    await embedResponse(message, guild.blacklist.map(id => `<@&${id}> [\`${id}\`]`).join(', '), { title: 'Blacklist' });
-  },
+  managers: roleList('managers', 'manager'),
+  denylist: roleList('blacklist', 'denylist'),
+  poll: roleList('pollWhitelist', 'poll allowlist'),
   timeout: async function(message) {
     if (!message.client.guildStore.has(message.guild.id)) return await embedResponse(message, 'There is no timeout configured for this guild', { title: 'Timeout' });
     const guild = message.client.guildStore.get(message.guild.id);
@@ -153,7 +155,7 @@ const SUBCOMMANDS = {
 
   },
   pollWhitelist: {
-    cmds: ['polllist','pollallowlist', 'pollwhitelist'],
+    cmds: ['poll','pollallowlist', 'pollwhitelist'],
     call: callPollWhitelist,
   },
   timeout: {

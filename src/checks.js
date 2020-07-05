@@ -21,7 +21,11 @@ exports.isNotBlacklisted = function(message) {
 }
 
 exports.isPollWhitelisted = function(message) {
-  return true;
+  if (!message.member) return false;
+  for (let role of message.client.guildStore.get(message.guild.id).pollWhitelist) {
+    if (message.member.roles.has(role)) return true;
+  }
+  return false;
 }
 
 exports.combine = function() {
