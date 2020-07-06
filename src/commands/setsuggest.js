@@ -157,6 +157,7 @@ const SUBCOMMANDS = {
   pollWhitelist: {
     cmds: ['poll','pollallowlist', 'pollwhitelist'],
     call: callPollWhitelist,
+    help: 'Add/Remove roles to/from poll allowlist: `{command} poll + @role`, `{command} poll - @role`'
   },
   timeout: {
     cmds: ['timeout', 'time', 'ratelimit'],
