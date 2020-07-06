@@ -1,5 +1,6 @@
 const { Message, TextChannel, Guild, RichEmbed } = require('discord.js');
-const { numberEmoji, errorWrap } = require('../util.js');
+const { numberEmoji, errorWrap, isOfBaseType } = require('../util.js');
+const { debugLog } = require('../debug.js');
 
 const REACTION_LOOKUP = {};
 for (let i=1;i<=10;i++) {
@@ -11,7 +12,7 @@ class Poll {
   constructor(client, init) {
     this.client = client;
 
-    this.title = init.title;
+    this.title = isOfBaseType(init.title,String) ? (init.title.length > 0 ? init.title : undefined) : undefined;
     this.description = init.description;
     this.color = init.color;
     this.options = init.options;
@@ -24,6 +25,7 @@ class Poll {
     this._channel = init._channel;
     this._guild = init._guild;
     this.ended = init.ended || false;
+    this.author = init.author;
   }
 
   get message() {
@@ -101,6 +103,7 @@ class Poll {
     const channel = await this.channel;
     const message = await channel.send(new RichEmbed({
       title: this.title,
+      author: await this.fetchAuthor(),
       footer: { text: 'Finishes' },
       timestamp: this.created+this.duration,
       color: this.color,
@@ -128,6 +131,7 @@ class Poll {
     counts = counts.sort((a,b) => b.count-a.count);
     await message.edit(new RichEmbed({
       title: this.title,
+      author: await this.fetchAuthor(),
       description: this.description,
       footer: { text: `Finished (${total} votes)` },
       timestamp: this.created + this.duration,
@@ -136,6 +140,21 @@ class Poll {
     }));
     this.ended = true;
     await this.delete();
+  }
+
+  async fetchAuthor() {
+    if (!isOfBaseType(this.author, String)) return;
+    if (this.client.users.has(this.author)) {
+      const user = this.client.users.get(this.author);
+      return { name: user.username, icon_url: user.avatarURL || 'https://discord.com/assets/322c936a8c8be1b803cd94861bdfa868.png' };
+    }
+    try {
+      const user = await discord.client.fetchUser(this.author);
+      return { name: user.username, icon_url: user.avatarURL || 'https://discord.com/assets/322c936a8c8be1b803cd94861bdfa868.png' };
+    } catch(e) {
+      debugLog(e);
+      return;
+    }
   }
 
   async registerWait() {

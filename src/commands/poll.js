@@ -1,5 +1,5 @@
 const { isPollWhitelisted } = require('../checks.js');
-const { parseTime, isOfBaseType } = require('../util.js');
+const { parseTime, isOfBaseType, is } = require('../util.js');
 const Poll = require('../structs/Poll.js');
 const { verbooseLog } = require('../debug.js');
 
@@ -25,22 +25,30 @@ const numberWrapper = function(key) {
   }
 }
 
+const mentionWrapper = function(key) {
+  return function(value) {
+    return { value: is.discordMention(value.trim()), key };
+  }
+}
+
 const OPTIONS = {
   time: timeWrapper,
   duration: timeWrapper,
   title: rawWrapper('title'),
-  color: numberWrapper('color')
+  color: numberWrapper('color'),
+  author: mentionWrapper('author')
 }
 
 const parseArgs = function(content) {
   const parts = splitArgs(content);
   const partsL = parts.length;
   const res = {
-    title: 'Poll',
+    title: '',
     description: null,
     options: [],
     duration: null,
-    color: 0x7289DA
+    color: 0x7289DA,
+    author: undefined
   };
   for (let i=0;i<partsL;i++) {
     const opt = parts[i].match(/^([a-z-]+)=(.+)$/i);
@@ -58,6 +66,7 @@ const parseArgs = function(content) {
       if (t in OPTIONS) {
         const { value, key } = OPTIONS[t](opt[2]);
         res[key] = value;
+        verbooseLog('[poll] Parse',key,opt[2],'=',value);
       }
     }
   }
@@ -85,9 +94,9 @@ const CHECKS = {
   },
   title: {
     check: function(value) {
-      return isOfBaseType(value, String) && value.length > 0;
+      return isOfBaseType(value, String);
     },
-    error: 'Your title must be longer than 0 characters'
+    error: 'Your title must be a string'
   }
 }
 
