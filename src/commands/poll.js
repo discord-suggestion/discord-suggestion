@@ -1,6 +1,7 @@
 const { isPollWhitelisted } = require('../checks.js');
 const { parseTime, isOfBaseType } = require('../util.js');
 const Poll = require('../structs/Poll.js');
+const { verbooseLog } = require('../debug.js');
 
 // Doesn't work with prefixes containing a space
 const splitArgs = function(content) {
@@ -96,7 +97,7 @@ const call = async function(message) {
     if (!CHECKS[key].check(args[key])) return await message.channel.send(CHECKS[key].error);
   }
   args.channel = message.channel;
-  console.log(args);
+  verbooseLog(args);
   const poll = new Poll(message.client, args);
   await poll.send();
   await poll.save();
