@@ -101,6 +101,7 @@ class Poll {
     const channel = await this.channel;
     const message = await channel.send(new RichEmbed({
       title: this.title,
+      footer: { text: 'Finishes' },
       timestamp: this.created+this.duration,
       color: this.color,
       description: `${this.description}\n\n${this.options.map((op, i) => `${numberEmoji(i+1)} ${op}`).join('\n')}`
@@ -128,6 +129,7 @@ class Poll {
     await message.edit(new RichEmbed({
       title: this.title,
       description: this.description,
+      footer: { text: 'Finished' },
       timestamp: this.created + this.duration,
       color: this.color,
       fields: counts.map((v) => {return { name: `${total > 0 ? Math.round(v.count/total*1000)/10 : 0}% (${v.count})`, value: this.options[v.option] }})
