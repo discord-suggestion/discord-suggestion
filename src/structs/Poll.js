@@ -106,10 +106,10 @@ class Poll {
       description: `${this.description}\n\n${this.options.map((op, i) => `${numberEmoji(i+1)} ${op}`).join('\n')}`
     }));
     this.message = message;
-    await this.registerWait();
     for (let i=0;i<this.options.length;i++) {
       await message.react(numberEmoji(i+1));
     }
+    await this.registerWait();
   }
 
   async end() {
