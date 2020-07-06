@@ -149,7 +149,7 @@ class Poll {
       return { name: user.username, icon_url: user.avatarURL || 'https://discord.com/assets/322c936a8c8be1b803cd94861bdfa868.png' };
     }
     try {
-      const user = await discord.client.fetchUser(this.author);
+      const user = await this.client.fetchUser(this.author);
       return { name: user.username, icon_url: user.avatarURL || 'https://discord.com/assets/322c936a8c8be1b803cd94861bdfa868.png' };
     } catch(e) {
       debugLog(e);
