@@ -129,7 +129,7 @@ class Poll {
     await message.edit(new RichEmbed({
       title: this.title,
       description: this.description,
-      footer: { text: 'Finished' },
+      footer: { text: `Finished (${total} votes)` },
       timestamp: this.created + this.duration,
       color: this.color,
       fields: counts.map((v) => {return { name: `${total > 0 ? Math.round(v.count/total*1000)/10 : 0}% (${v.count})`, value: this.options[v.option] }})
