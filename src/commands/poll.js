@@ -40,7 +40,7 @@ const parseArgs = function(content) {
     description: null,
     options: [],
     duration: null,
-    color: undefined
+    color: 0x7289DA
   };
   for (let i=0;i<partsL;i++) {
     const opt = parts[i].match(/^([a-z-]+)=(.+)$/i);
