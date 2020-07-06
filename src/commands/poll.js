@@ -72,15 +72,15 @@ const CHECKS = {
   },
   options: {
     check: function(value) {
-      return (value instanceof Array) && value.length > 0;
+      return (value instanceof Array) && value.length > 0 && value.length < 11;
     },
-    error: 'You must have at least 1 option'
+    error: 'You must have between 1 and 10 (inclusive) options'
   },
   duration: {
     check: function(value) {
-      return !isNaN(value) && value > 0;
+      return !isNaN(value) && value > 1000;
     },
-    error: 'You must provide a valid time greater than 1ms'
+    error: 'You must provide a valid time greater than 1s'
   },
   title: {
     check: function(value) {
@@ -96,6 +96,7 @@ const call = async function(message) {
     if (!CHECKS[key].check(args[key])) return await message.channel.send(CHECKS[key].error);
   }
   args.channel = message.channel;
+  console.log(args);
   const poll = new Poll(message.client, args);
   await poll.send();
   await poll.save();
