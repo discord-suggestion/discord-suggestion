@@ -136,7 +136,6 @@ const callList = async function(message, params) {
   return await errorResponse(message, `The item specified (\`${params[0]}\`) must be one of ${Object.keys(LISTS).map(k => `\`${k}\``).join(', ')}`);
 }
 
-// TODO: Put help messages in this object
 const SUBCOMMANDS = {
   channel: {
     cmds: ['channel','channels'],
