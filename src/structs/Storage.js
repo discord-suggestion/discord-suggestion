@@ -1,6 +1,7 @@
 const { Collection } = require('discord.js');
 const SaveInterface = require('./save/SaveInterface.js');
 const SaveJSON = require('./save/SaveJSON.js');
+const { verbooseLog } = require('../debug.js');
 
 class Storage extends Collection {
   constructor(filename) {
@@ -36,13 +37,13 @@ class Storage extends Collection {
   set(key, value, dontSave) {
     super.set(key, value);
     if (dontSave !== true) return this.save();
-    console.warn(`Set ${key} without saving`);
+    verbooseLog(`Set ${key} without saving`);
   }
 
   delete(key, dontSave) {
     super.delete(key);
     if (!dontSave) return this.save();
-    console.warn(`Deleted ${key} without saving`);
+    verbooseLog(`Deleted ${key} without saving`);
   }
 
   update(key, updater, dontSave) {
