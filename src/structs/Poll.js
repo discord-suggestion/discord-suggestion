@@ -52,7 +52,6 @@ class Poll {
     this.__message = message;
     this._message = message.id;
     this.channel = message.channel;
-    return message;
   }
 
   get channel() {
@@ -76,7 +75,6 @@ class Poll {
     this.__channel = channel;
     this._channel = channel.id;
     this.guild = channel.guild;
-    return channel;
   }
 
   get guild() {
@@ -94,7 +92,6 @@ class Poll {
     if (!(guild instanceof Guild)) return;
     this.__guild = guild;
     this._guild = guild.id;
-    return guild;
   }
 
   /* Methods */
