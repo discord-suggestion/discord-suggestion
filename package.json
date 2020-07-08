@@ -1,13 +1,22 @@
 {
   "name": "discord-suggestion",
   "version": "1.2.2",
-  "description": "",
+  "description": "A standalone discord bot that allows you to easily create suggestion channels and polls",
   "main": "index.js",
   "author": "Douile",
-  "keywords": [],
+  "keywords": [
+    "discord",
+    "discord bot",
+    "suggestions",
+    "polls"
+  ],
   "homepage": "https://github.com/discord-suggestion/discord-suggestion",
   "bugs": {
     "url": "https://github.com/discord-suggestion/discord-suggestion/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/discord-suggestion/discord-suggestion.git"
   },
   "scripts": {
     "test": "npm run lint",
