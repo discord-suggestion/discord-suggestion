@@ -47,7 +47,7 @@ class SaveJSON extends SaveInterface {
       promises.push(this.loadItem(dataStore, key, item));
     }
     let res = await allSettled(promises), errs = res.filter(v => v !== true);
-    console.log(`Loaded ${promises.length} configs...`);
+    console.log(`[STORAGE] Loaded ${promises.length} configs...`);
     if (errs.length > 0) console.error(errs);
   }
 

@@ -65,7 +65,7 @@ class Poll {
           poll.__channel = guild.channels.get(poll._channel);
           return resolve(poll.__channel);
         }
-        reject(new Error('No such channel'));
+        reject(new Error(`Could not find channel ${this._channel}`));
       }).catch(reject);
     })
   }
@@ -85,7 +85,7 @@ class Poll {
       this.__guild = this.client.guilds.get(this._guild);
       return Promise.resolve(this.__guild);
     }
-    return Promise.reject(new Error('No such guild'));
+    return Promise.reject(new Error(`Could not find guild ${this._guild}`));
   }
 
   set guild(guild) {

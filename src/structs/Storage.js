@@ -37,13 +37,13 @@ class Storage extends Collection {
   set(key, value, dontSave) {
     super.set(key, value);
     if (dontSave !== true) return this.save();
-    verbooseLog(`Set ${key} without saving`);
+    verbooseLog(`[STORAGE] Set ${key} without saving`);
   }
 
   delete(key, dontSave) {
     super.delete(key);
     if (!dontSave) return this.save();
-    verbooseLog(`Deleted ${key} without saving`);
+    verbooseLog(`[STORAGE] Deleted ${key} without saving`);
   }
 
   update(key, updater, dontSave) {

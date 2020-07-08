@@ -53,7 +53,7 @@ Object.defineProperties(client, {
 async function loadCommand(file) {
   const command = require(`./commands/${file}`);
   client.commands.set(command.name.toLowerCase(), {call: command.call, check: command.check, help: command.help});
-  debugLog(`Loaded command ${command.name}`);
+  debugLog(`[SETUP] Loaded command ${command.name}`);
 }
 
 async function loadCommands() {
@@ -103,7 +103,7 @@ client.on(Discord.Constants.Events.MESSAGE_CREATE, errorWrap(async function(mess
       try {
         await cmd.call(message, parts);
       } catch(e) {
-        console.error(`Error running command ${command}\n`, e);
+        console.error(`[MESSAGE] Error running command ${command}\n`, e);
         await message.channel.send('Sorry an error occured, please try again later');
       }
     } else {
@@ -112,7 +112,7 @@ client.on(Discord.Constants.Events.MESSAGE_CREATE, errorWrap(async function(mess
 
     return;
   }
-  verbooseLog(`Unkown command ${command}`);
+  verbooseLog(`[MESSAGE] Unkown command ${command}`);
 }))
 
 
@@ -125,9 +125,9 @@ client.on('raw', errorWrap(async function(data) {
 
 
 client.on(Discord.Constants.Events.READY, errorWrap(async function() {
-  console.log(`Logged in ${client.user.username} [${client.user.id}]...`);
+  console.log(`[READY] Logged in ${client.user.username} [${client.user.id}]...`);
   let invite = await client.generateInvite(INVITE_FLAGS);
-  console.log(`Invite link ${invite}`);
+  console.log(`[READY] Invite link ${invite}`);
   await setupPolls();
 }));
 
@@ -151,14 +151,15 @@ async function start(config) {
     if (key in config) client.config[key] = config[key];
   }
 
-  debugLog('DEVELOPER LOGS ENABLED');
-  verbooseLog('VERBOOSE LOGS ENABLED');
+  debugLog('[LOGGING] DEVELOPER LOGS ENABLED');
+  verbooseLog('[LOGGING] VERBOOSE LOGS ENABLED');
 
   // Setup
   await loadCommands();
   await client.guildStore.load();
   await client.reactEventHandler.loadHandlers();
 
+  // Log in
   await client.login(config.key);
   return client;
 }
