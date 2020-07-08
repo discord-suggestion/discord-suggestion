@@ -2,11 +2,11 @@ const Discord = require('discord.js');
 const fs = require('fs').promises;
 
 const StorageWithDefault = require('./structs/StorageWithDefault.js');
-const { errorWrap, hasAny, is } = require('./util.js');
+const { errorWrap, is } = require('./util.js');
 const { setDebugFlag, debugLog, verbooseLog } = require('./debug.js');
-const constants = require('./constants.js');
 const WaitManager = require('./structs/WaitManager.js');
 const Poll = require('./structs/Poll.js');
+const EventHandler = require('./structs/EventHandler.js');
 
 const INVITE_FLAGS = [ 'VIEW_AUDIT_LOG', 'VIEW_CHANNEL', 'SEND_MESSAGES', 'MANAGE_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY', 'ADD_REACTIONS' ];
 
@@ -41,6 +41,7 @@ Object.defineProperties(client, {
   guildStore: { value: new StorageWithDefault('_guild_store.json', GUILD_DEFAULTS) },
   commands: { value: new Map() },
   waitManager: { value: new WaitManager(client) },
+  reactEventHandler: { value: new EventHandler(client, 'reactadd') },
   config: { value: {
     prefix: '!',
     owner: '293482190031945739',
@@ -87,7 +88,7 @@ client.on(Discord.Constants.Events.MESSAGE_CREATE, errorWrap(async function(mess
     const mention = is.discordMention(message.content.trim());
     if (mention === client.user.id) await message.channel.send(`Hi there, my prefix is \`${client.config.prefix}\`, you can view my commands with \`${client.config.prefix}help\``);
     return;
-  };
+  }
 
   let parts = message.content.substr(client.config.prefix.length).split(' ');
   if (parts.length === 0) return;
@@ -118,45 +119,8 @@ client.on(Discord.Constants.Events.MESSAGE_CREATE, errorWrap(async function(mess
 /* raw handler used as reaction only works for cached messages */
 client.on('raw', errorWrap(async function(data) {
   if (data.t !== 'MESSAGE_REACTION_ADD') return; /* Check packet event */
-  if (!client.guildStore.has(data.d.guild_id)) return; /* Check message in guild with suggestion channels */
-  if (!client.guilds.has(data.d.guild_id)) return; /* Check guild is in cache */
-  const guild = client.guilds.get(data.d.guild_id);
-  const guildStore = client.guildStore.get(data.d.guild_id);
 
-  if (!(data.d.channel_id in guildStore.channels)) return; /* Check channel is a suggestion channel */
-  if (!guild.channels.has(data.d.channel_id)) return; /* Check channel is in guild */
-  const channel = guild.channels.get(data.d.channel_id);
-  let message = channel.messages.get(data.d.message_id);
-  try {
-    message = await channel.fetchMessage(data.d.message_id);
-  } catch (e) {
-    verbooseLog(e);
-  }
-  if (message === undefined) return; /* Check message exists */
-
-  if (message.author.id !== client.user.id) return; /* Check message was sent by this bot */
-  if (!guild.members.has(data.d.user_id)) return; /* Check reactor is a member */
-  const member = guild.members.get(data.d.user_id);
-  if (!(member.hasPermission(client.config.adminFlag) || hasAny(member.roles, guildStore.managers))) return; /* Check reactors permissions */
-  if (message.embeds.length === 0) return; /* Check whether message has an embed */
-  if (message.embeds[0].fields.length > 0) return; // This'll do for now to check whether suggestion has been accepted / rejected
-
-  const action = data.d.emoji.name === constants.emojis.accept ? true : data.d.emoji.name === constants.emojis.reject ? false : undefined;
-  if (action !== undefined) {
-    let upvotes = 0, downvotes = 0;
-    for (let reaction of message.reactions.values()) {
-      if (reaction.emoji.name === constants.emojis.upvote) {
-        upvotes = reaction.count-1;
-      } else if (reaction.emoji.name === constants.emojis.downvote) {
-        downvotes = reaction.count-1;
-      }
-    }
-    const embed = new Discord.RichEmbed(message.embeds[0]);
-    embed.setColor(action ? 0x00ff00 : 0xff0000);
-    embed.addField(`_ _`, `${action ? 'Accepted' : 'Rejected'} by <@!${member.id}>\nVerdict: ${upvotes} ${constants.emojis.upvote} : ${downvotes} ${constants.emojis.downvote}`, true);
-    await message.clearReactions();
-    await message.edit(embed);
-  }
+  await client.reactEventHandler.handle(data);
 }));
 
 
@@ -165,7 +129,7 @@ client.on(Discord.Constants.Events.READY, errorWrap(async function() {
   let invite = await client.generateInvite(INVITE_FLAGS);
   console.log(`Invite link ${invite}`);
   await setupPolls();
-}))
+}));
 
 client.on(Discord.Constants.Events.RATE_LIMIT, debugLog);
 client.on(Discord.Constants.Events.DEBUG, verbooseLog);
@@ -189,8 +153,12 @@ async function start(config) {
 
   debugLog('DEVELOPER LOGS ENABLED');
   verbooseLog('VERBOOSE LOGS ENABLED');
+
+  // Setup
   await loadCommands();
   await client.guildStore.load();
+  await client.reactEventHandler.loadHandlers();
+
   await client.login(config.key);
   return client;
 }
