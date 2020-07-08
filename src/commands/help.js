@@ -21,11 +21,13 @@ const call = async function(message, parts) {
       footer: { text: `Use "${message.client.config.prefix}help commandName" for detailed help` }
     }));
   } else {
+    const matches = Array.from(message.client.commands.entries())
+      .filter(cmd => matchAny(`${message.client.config.prefix}${cmd[0]}`, search) && (isOfBaseType(cmd[1].check, Function) ? cmd[1].check(message) : true));
     await message.channel.send(new RichEmbed({
       title: 'Help',
-      fields: Array.from(message.client.commands.entries())
-        .filter(cmd => matchAny(`${message.client.config.prefix}${cmd[0]}`, search) && (isOfBaseType(cmd[1].check, Function) ? cmd[1].check(message) : true))
-        .map(cmd => {
+      description: matches.length === 0 ? `Sorry no commands matched the pattern \`${parts.join(' ')}\` (_commands you don't have access to will not appear_)\nYou can list all the commands you have access to with \`${message.client.config.prefix}help\`` : undefined,
+      fields:
+        matches.map(cmd => {
           return {
             name: `${message.client.config.prefix}${cmd[0]}`,
             value: isOfBaseType(cmd[1].help, String) ? cmd[1].help.replace(/\{command\}/gi, `${message.client.config.prefix}${cmd[0]}`) : 'No help message provided',
