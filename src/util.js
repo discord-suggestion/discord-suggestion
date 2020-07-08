@@ -1,4 +1,8 @@
-/* Polyfill for Promise.allSettled as it is not supported until Node v12.9.0 */
+/**
+* Polyfill for Promise.allSettled as it is not supported until Node v12.9.0
+* @async
+* @param {Iterable.<AsyncFunction>} promises - Promises to wait for
+*/
 exports.allSettled = function(promises) {
   var count = 0, size = promises.length, responses = new Array(size);
   return new Promise((resolve) => {
@@ -17,7 +21,12 @@ exports.allSettled = function(promises) {
   });
 }
 
-/* Wrap async or promise functions and handle errors */
+/**
+* Wrap async functions and handle errors
+* @param {AsyncFunction} callable - Async function to wrap
+* @param {Function?} onError - Optional to function to call on error
+* @returns {Function} non async function that will run provided callable
+*/
 exports.errorWrap = function(callable, onError) {
   return function() {
     return callable.apply(this,arguments).then(null).catch(function(...e) {
@@ -27,16 +36,31 @@ exports.errorWrap = function(callable, onError) {
   }
 }
 
-// Check the constructor of an item
+/**
+* Check the constructor of an item, useful for checking type
+* @param {*} object the value to check the type of
+* @param {Function} constructor the constructor to check for (e.g. String)
+* @returns {boolean} Whether the object has specified constructor
+*/
 exports.isOfBaseType = function(obj, constr) {
   return (![null, undefined].includes(obj)) && (obj.constructor === constr);
 }
 
 const MARKDOWN_CHARS = '*_|~>`';
+/**
+* Escape all markdown characters in string
+* @param {string} text - The text to escape
+* @returns {string} Escaped text
+*/
 exports.markdownEscape = function(text) {
   return Array.from(text).map(c => MARKDOWN_CHARS.includes(c) ? `\\${c}` : c).join('');
 }
 
+/**
+* Extend the prototype of a class
+* @param class - The class defenition to extend the prototype of
+* @param {Object.<string, Function>} method - Object of methods to add
+*/
 exports.extendPrototype = function(classVar, methods) {
   for (let key in methods) {
     /* defineProperty not required here, could use regular assignment */
@@ -90,6 +114,12 @@ const is = {
 }
 exports.is = is;
 
+/**
+* Check if a map has any of the keys provided
+* @param {object} map - The map to check
+* @param {string[]} keys - The keys to check for
+* @returns {boolean} Whether the map has any of the keys
+*/
 exports.hasAny = function(map, keys) {
   for (let key of keys) {
     if (map.has(key)) return true;
@@ -97,6 +127,11 @@ exports.hasAny = function(map, keys) {
   return false;
 }
 
+/**
+* Create a duration in ms from a time string
+* @param {string} time - duration string (e.g. "24h 5m 1s")
+* @returns {number} duration in ms
+*/
 exports.parseTime = function(time)  {
   let res = 0;
   for (let part of time.matchAll(/([0-9]+)([a-z]?)/ig)) {
@@ -123,6 +158,15 @@ exports.parseTime = function(time)  {
   return res;
 }
 
+exports.humanDuration = function(duration) {
+
+}
+
+/**
+* Convert a number between 0 and 10 the coresponding number tile emoji
+* @param {number} n
+* @returns {string} the emoji (or ? emoji)
+*/
 exports.numberEmoji = function(n) {
   if (isNaN(n) || n < 0 || n > 10) return '❓';
 	if (n === 10) return String.fromCodePoint(0x1f51f)
