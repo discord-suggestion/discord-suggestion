@@ -1,4 +1,4 @@
-const { isPollWhitelisted } = require('../checks.js');
+const { combine, isAdmin, isPollWhitelisted } = require('../checks.js');
 const { parseTime, isOfBaseType, is } = require('../util.js');
 const Poll = require('../structs/Poll.js');
 const { verbooseLog } = require('../debug.js');
@@ -114,7 +114,7 @@ const call = async function(message) {
 
 exports.name = 'poll';
 exports.call = call;
-exports.check = isPollWhitelisted;
+exports.check = combine(isAdmin, isPollWhitelisted);
 exports.help = 'Create a poll `{command} title;option;option;set=value`\n\
 Seperate all arguments with a `;`\n\
 The first non-setting argument is the description and the following are used as options (in order)\n\
