@@ -2,7 +2,7 @@ const Discord = require('discord.js');
 const fs = require('fs').promises;
 
 const StorageWithDefault = require('./structs/StorageWithDefault.js');
-const { errorWrap, hasAny } = require('./util.js');
+const { errorWrap, hasAny, is } = require('./util.js');
 const { setDebugFlag, debugLog, verbooseLog } = require('./debug.js');
 const constants = require('./constants.js');
 const WaitManager = require('./structs/WaitManager.js');
@@ -83,7 +83,11 @@ async function setupPolls() {
 
 client.on(Discord.Constants.Events.MESSAGE_CREATE, errorWrap(async function(message) {
   if (!message.member || message.author.bot) return;
-  if (!message.content.startsWith(client.config.prefix)) return;
+  if (!message.content.startsWith(client.config.prefix)) {
+    const mention = is.discordMention(message.content.trim());
+    if (mention === client.user.id) await message.channel.send(`Hi there, my prefix is \`${client.config.prefix}\`, you can view my commands with \`${client.config.prefix}help\``);
+    return;
+  };
 
   let parts = message.content.substr(client.config.prefix.length).split(' ');
   if (parts.length === 0) return;
