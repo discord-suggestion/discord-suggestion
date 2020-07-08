@@ -82,9 +82,17 @@ const setupAndStart = function(key, args) {
       stop = client.destroy.bind(client);
     }
 
-    process.on('beforeExit', async function() {
+    let hasShutdown = false;
+    const shutdown = async function() {
+      if (hasShutdown) return;
+      hasShutdown = true;
+      console.log('Shutting down...');
       if (stop) await stop();
-    })
+    }
+
+    process.once('SIGINT', shutdown);
+    process.once('SIGTERM', shutdown);
+    process.once('beforeExit', shutdown);
 
     devStart().then(null).catch(console.error);
   }
