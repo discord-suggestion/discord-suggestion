@@ -168,7 +168,7 @@ client.on(Discord.Constants.Events.DEBUG, verbooseLog);
 client.on(Discord.Constants.Events.WARN, verbooseLog);
 client.on(Discord.Constants.Events.ERROR, debugLog);
 client.on(Discord.Constants.Events.DISCONNECT, (closeEvent) => {
-  console.warn('[NETWORK] Disconnected from discord API', closeEvent);
+  debugLog('[NETWORK] Disconnected from discord API', closeEvent);
 });
 client.on(Discord.Constants.Events.RECONNECTING, () => {
   console.log('[NETWORK] Attempting to reconnect to discord API');
