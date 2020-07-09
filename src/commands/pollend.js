@@ -16,3 +16,4 @@ exports.name = 'pollend';
 exports.alias = [ 'pollend', 'endpoll', 'pollstop', 'stoppoll' ];
 exports.check = isAdmin;
 exports.call = call;
+exports.help = 'End a poll now `{command} pollID` The pollID is the message ID of the poll, it can be found in the pollinfo command or by right clicking the poll';

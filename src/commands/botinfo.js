@@ -23,4 +23,4 @@ const call = async function(message) {
 exports.name = 'info';
 exports.alias = [ 'info', 'botinfo', 'status' ];
 exports.call = call;
-exports.help = 'Output runtime information';
+exports.help = 'Output runtime information `{command}`';
