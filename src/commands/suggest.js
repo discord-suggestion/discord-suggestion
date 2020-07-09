@@ -99,6 +99,7 @@ const call = async function(message, params) {
 }
 
 exports.name = 'suggest';
+exports.alias = [ 'suggest', 'newsuggestion', 'createsuggestion' ];
 exports.call = call;
 exports.check = isNotBlacklisted;
 exports.help = 'Make a suggestion\nUsage\n`{command} [gamemode] suggestion`\ne.g. `{command} 1v1 Add some extra guns`';

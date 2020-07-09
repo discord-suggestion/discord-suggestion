@@ -2,11 +2,12 @@ const Discord = require('discord.js');
 const fs = require('fs').promises;
 
 const StorageWithDefault = require('./structs/StorageWithDefault.js');
-const { errorWrap, is } = require('./util.js');
+const { errorWrap, is, isOfBaseType } = require('./util.js');
 const { setDebugFlag, debugLog, verbooseLog } = require('./debug.js');
 const WaitManager = require('./structs/WaitManager.js');
 const Poll = require('./structs/Poll.js');
 const EventHandler = require('./structs/EventHandler.js');
+const { AsyncFunction } = require('./constants.js');
 
 const INVITE_FLAGS = [ 'VIEW_AUDIT_LOG', 'VIEW_CHANNEL', 'SEND_MESSAGES', 'MANAGE_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY', 'ADD_REACTIONS' ];
 
@@ -52,7 +53,17 @@ Object.defineProperties(client, {
 
 async function loadCommand(file) {
   const command = require(`./commands/${file}`);
-  client.commands.set(command.name.toLowerCase(), {call: command.call, check: command.check, help: command.help});
+  if (
+    isOfBaseType(command, Object) &&
+    isOfBaseType(command.name, String) &&
+    isOfBaseType(command.alias, Array) &&
+    isOfBaseType(command.call, AsyncFunction)
+  ) {
+    for (let cmd of command.alias) {
+      client.commands.set(cmd.toLowerCase(), command);
+    }
+  }
+
   debugLog(`[SETUP] Loaded command ${command.name}`);
 }
 

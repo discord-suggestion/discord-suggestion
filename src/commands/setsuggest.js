@@ -193,7 +193,8 @@ const call = async function(message, params) {
   return await errorResponse(message, `Unknown command \`${subcmd}\``);
 }
 
-exports.name = 'setsuggest';
+exports.name = 'settings';
+exports.alias = [ 'setting', 'settings', 'setsuggest' ];
 exports.call = call;
 exports.check = isAdmin;
 exports.help = generateHelp('**Configure suggestion options**', SUBCOMMANDS);
