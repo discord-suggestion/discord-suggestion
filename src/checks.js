@@ -28,12 +28,22 @@ exports.isPollWhitelisted = function(message) {
   return false;
 }
 
-exports.combine = function() {
+exports.combineAll = function() {
   const checks = Array.from(arguments);
   return function(message) {
     for (let check of checks) {
       if (!check(message)) return false;
     }
     return true;
+  }
+}
+
+exports.combineAny = function() {
+  const checks = Array.from(arguments);
+  return function(message) {
+    for (let check of checks) {
+      if (check(message)) return true;
+    }
+    return false;
   }
 }
