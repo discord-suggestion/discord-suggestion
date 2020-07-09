@@ -114,7 +114,7 @@ const call = async function(message) {
 }
 
 exports.name = 'poll';
-exports.alias = [ 'poll', 'createpoll', 'newpoll', 'pol' ];
+exports.alias = [ 'poll', 'createpoll', 'newpoll' ];
 exports.call = call;
 exports.check = combineAny(isAdmin, isPollWhitelisted);
 exports.help = 'Create a poll `{command} title;option;option;set=value`\n\
