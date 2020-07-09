@@ -13,6 +13,6 @@ const call = async function(message) {
 }
 
 exports.name = 'pollinfo';
-exports.alias = [ 'pollinfo' ];
+exports.alias = [ 'pollinfo', 'polllist' ];
 exports.check = isAdmin;
 exports.call = call;
