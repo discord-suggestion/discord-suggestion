@@ -106,6 +106,7 @@ const call = async function(message) {
     if (!CHECKS[key].check(args[key])) return await message.channel.send(CHECKS[key].error);
   }
   args.channel = message.channel;
+  args.creator = message.author.id;
   verbooseLog('[POLL]', args);
   const poll = new Poll(message.client, args);
   await poll.send();
