@@ -1,3 +1,5 @@
+const { DURATIONS } = require('./constants.js');
+
 /**
 * Polyfill for Promise.allSettled as it is not supported until Node v12.9.0
 * @async
@@ -159,7 +161,13 @@ exports.parseTime = function(time)  {
 }
 
 exports.humanDuration = function(duration) {
-
+  const res = [];
+  for (let d of DURATIONS) {
+    const n = Math.floor(duration / d.n);
+    if (n > 0) res.push(`${n} ${d.name}${n > 1 ? 's' : ''}`);
+    duration = duration % d.n;
+  }
+  return res.join(' ');
 }
 
 /**

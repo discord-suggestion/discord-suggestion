@@ -3,6 +3,7 @@ const fetch = require('node-fetch');
 
 const { emojis } = require('../constants.js');
 const { isNotBlacklisted } = require('../checks.js');
+const { humanDuration } = require('../util.js');
 
 const reactions = [emojis.upvote, emojis.downvote];
 
@@ -30,7 +31,7 @@ const call = async function(message, params) {
       return guildData;
     });
 
-    if (nextTime !== undefined) return await message.channel.send(`Sorry you must wait ${Math.round((nextTime-now)/1000,2)} seconds before creating another suggestion`); // TODO: Humanify duration
+    if (nextTime !== undefined) return await message.channel.send(`Sorry you must wait ${humanDuration(nextTime-now)} seconds before creating another suggestion`);
 
     const rMessage = await message.channel.send('Creating suggestion...');
     const channelTopic = channel[0][1].topic;
