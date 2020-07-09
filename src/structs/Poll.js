@@ -18,14 +18,16 @@ class Poll {
     this.options = init.options;
     this.created = init.created || Date.now();
     this.duration = init.duration;
+    this.ended = init.ended || false;
+    this.author = init.author;
+    this.creator = init.creator;
+
     this.message = init.message;
     this.channel = init.channel;
     this.guild = init.guild;
     this._message = init._message;
     this._channel = init._channel;
     this._guild = init._guild;
-    this.ended = init.ended || false;
-    this.author = init.author;
   }
 
   get message() {
@@ -114,6 +116,7 @@ class Poll {
   }
 
   async end() {
+    if (this.client.waitManager.has(this._message)) this.client.waitManager.clearTimeout(this._message);
     if (this.ended) return await this.delete();
     const message = await this.message;
     let counts = [];
@@ -131,7 +134,7 @@ class Poll {
       author: await this.fetchAuthor(),
       description: this.description,
       footer: { text: `Finished (${total} votes)` },
-      timestamp: this.created + this.duration,
+      timestamp: Date.now(),
       color: this.color,
       fields: counts.map((v) => {return { name: `${total > 0 ? Math.round(v.count/total*1000)/10 : 0}% (${v.count})`, value: this.options[v.option] }})
     }));
@@ -155,7 +158,7 @@ class Poll {
   }
 
   async registerWait() {
-    this.client.waitManager.registerWait(this._message, errorWrap(this.end.bind(this), errorWrap(this.delete.bind(this))), this.created+this.duration);
+    this.client.waitManager.registerWait(this._message, errorWrap(this.end.bind(this), errorWrap(this.delete.bind(this))), this.getDelay.bind(this));
   }
 
   async save() {
@@ -174,6 +177,10 @@ class Poll {
     })
   }
 
+  getDelay() {
+    return this.created + this.duration - Date.now();
+  }
+
   toJSON() {
     return {
       title: this.title,
@@ -182,6 +189,8 @@ class Poll {
       created: this.created,
       duration: this.duration,
       ended: this.ended,
+      author: this.author,
+      creator: this.creator,
       '_message': this._message,
       '_channel': this._channel,
       '_guild': this._guild

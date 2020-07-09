@@ -22,3 +22,10 @@ exports.DURATIONS = [
   { n: 1000, name: 'second' },
   { n: 1, name: 'millisecond' }
 ];
+
+exports.DURATIONS_OBJECT = {};
+for (let {name, n} of exports.DURATIONS) {
+  exports.DURATIONS_OBJECT[name] = n;
+}
+
+exports.MAX_TIMEOUT = 2147483647 - 100; // Max int32 - a buffer
