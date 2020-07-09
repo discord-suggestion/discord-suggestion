@@ -44,10 +44,10 @@ const call = async function(message, parts) {
       title: 'Help',
       description: matches.length === 0 ? `Sorry no commands matched the pattern \`${parts.join(' ')}\` (_commands you don't have access to will not appear_)\nYou can list all the commands you have access to with \`${message.client.config.prefix}help\`` : undefined,
       fields:
-        matches.map(([alias, cmd]) => {
+        matches.map((cmd) => {
           return {
-            name: `${message.client.config.prefix}${cmd.name}`,
-            value: isOfBaseType(cmd.help, String) ? cmd.help.replace(/\{command\}/gi, `${message.client.config.prefix}${cmd.name}`) : 'No help message provided',
+            name: `${message.client.config.prefix}${cmd[1].name}`,
+            value: isOfBaseType(cmd[1].help, String) ? cmd[1].help.replace(/\{command\}/gi, `${message.client.config.prefix}${cmd[1].name}`) : 'No help message provided',
             inline: false
           };
         })
