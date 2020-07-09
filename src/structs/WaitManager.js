@@ -47,9 +47,10 @@ class WaitManager {
       const d = item.timeGetter();
       if (d < MAX_TIMEOUT) {
         this.backlog.delete(id);
+        const waitManager = this;
         this.waiters.set(id, this.client.setTimeout(function() {
           waitManager.waiters.delete(id);
-          handler.apply(this, arguments);
+          item.handler.apply(this, arguments);
         }, d));
       }
     }
