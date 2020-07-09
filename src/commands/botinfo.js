@@ -10,7 +10,7 @@ const call = async function(message) {
   await message.channel.send(new RichEmbed({
     title: `${Package.name} info`,
     description: `[${Package.name} v${Package.version}](${Package.homepage}) [Report bugs here](${Package.bugs.url})\n\
-    Average ping: ${client.ping}ms\n\
+    Average ping: ${Math.round(client.ping,2)}ms\n\
     Uptime: ${humanDuration(client.uptime)}\n\
     Working in ${client.guilds.size} guilds\n\
     **Dependencies**\n\
