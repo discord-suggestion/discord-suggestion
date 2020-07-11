@@ -99,7 +99,7 @@ class Storage extends Collection {
 
   async saveUnlock() {
     if (this._saveLockQueue.length > 0) {
-      this._saveLock.pop(0)();
+      this._saveLockQueue.pop(0)();
     } else {
       this._saveLock = false;
     }
