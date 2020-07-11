@@ -48,16 +48,6 @@ exports.isOfBaseType = function(obj, constr) {
   return (![null, undefined].includes(obj)) && (obj.constructor === constr);
 }
 
-const MARKDOWN_CHARS = '*_|~>`';
-/**
-* Escape all markdown characters in string
-* @param {string} text - The text to escape
-* @returns {string} Escaped text
-*/
-exports.markdownEscape = function(text) {
-  return Array.from(text).map(c => MARKDOWN_CHARS.includes(c) ? `\\${c}` : c).join('');
-}
-
 /**
 * Extend the prototype of a class
 * @param class - The class defenition to extend the prototype of
@@ -73,6 +63,16 @@ exports.extendPrototype = function(classVar, methods) {
       value: methods[key]
     });
   }
+}
+
+const MARKDOWN_CHARS = '*_|~>`';
+/**
+* Escape all markdown characters in string
+* @param {string} text - The text to escape
+* @returns {string} Escaped text
+*/
+exports.markdownEscape = function(text) {
+  return Array.from(text).map(c => MARKDOWN_CHARS.includes(c) ? `\\${c}` : c).join('');
 }
 
 // Externeous type checking
