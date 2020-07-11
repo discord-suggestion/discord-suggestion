@@ -1,4 +1,5 @@
 const { Message, TextChannel, Guild, RichEmbed } = require('discord.js');
+
 const { numberEmoji, errorWrap, isOfBaseType } = require('../util.js');
 const { debugLog } = require('../debug.js');
 
@@ -109,9 +110,11 @@ class Poll {
       description: `${this.description}\n\n${this.options.map((op, i) => `${numberEmoji(i+1)} ${op}`).join('\n')}`
     }));
     this.message = message;
+    const promises = [];
     for (let i=0;i<this.options.length;i++) {
-      await message.react(numberEmoji(i+1));
+      promises.push(message.react(numberEmoji(i+1)));
     }
+    await Promise.all(promises);
     await this.registerWait();
   }
 

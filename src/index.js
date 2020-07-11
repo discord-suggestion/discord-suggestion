@@ -14,7 +14,7 @@ const INVITE_FLAGS = [ 'VIEW_AUDIT_LOG', 'VIEW_CHANNEL', 'SEND_MESSAGES', 'MANAG
 const client = new Discord.Client({
   apiRequestMethod: 'sequential',
   disableEveryone: true,
-  restTimeOffset: 1200,
+  restTimeOffset: 100,
   disabledEvents: [ 'TYPING_START', 'VOICE_STATE_UPDATE', 'VOICE_SERVER_UPDATE', 'WEBHOOKS_UPDATE' ],
   ws: {
     compress: true
