@@ -1,7 +1,7 @@
 const fs = require('fs').promises;
 const SaveInterface = require('./SaveInterface.js');
 const Serializable = require('../Serializable.js');
-const { allSettled, isOfBaseType } = require('../../util.js');
+const { allSettled, isOfBaseType } = require('@douile/bot-utilities');
 
 class SaveJSON extends SaveInterface {
   constructor(filename) {

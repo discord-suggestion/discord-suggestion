@@ -2,7 +2,7 @@ const { RichEmbed } = require('discord.js');
 
 const { commandSymbols } = require('../constants.js');
 const { isAdmin } = require('../checks.js');
-const { is, isOfBaseType } = require('../util.js');
+const { is, isOfBaseType } = require('@douile/bot-utilities');
 
 /* Check if 1st param is add/remove and if it is remove the param (defaults to add) */
 const addOrRemove = function(params) {

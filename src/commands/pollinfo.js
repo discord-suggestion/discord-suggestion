@@ -1,7 +1,7 @@
 const { RichEmbed } = require('discord.js');
 
 const { isAdmin } = require('../checks.js');
-const { humanDuration } = require('../util.js');
+const { humanDuration } = require('@douile/bot-utilities');
 
 const EMBED_NO_POLLS = new RichEmbed({ title: 'Active polls', description: 'No active polls in this server'});
 

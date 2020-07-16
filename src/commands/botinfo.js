@@ -2,7 +2,7 @@ const { RichEmbed } = require('discord.js');
 
 const Package = require('../../package');
 const DiscordPackage = require('discord.js/package');
-const { humanDuration } = require('../util.js');
+const { humanDuration } = require('@douile/bot-utilities');
 
 const call = async function(message) {
   const client = message.client;

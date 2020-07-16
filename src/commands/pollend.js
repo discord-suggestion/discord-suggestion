@@ -1,5 +1,5 @@
 const { isAdmin } = require('../checks.js');
-const { is } = require('../util.js');
+const { is } = require('@douile/bot-utilities');
 
 const call = async function(message, params) {
   if (params.length < 1) return await message.channel.send('Sorry, you must provide a message ID (of a poll)');

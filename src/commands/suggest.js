@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 
 const { emojis } = require('../constants.js');
 const { isNotBlacklisted } = require('../checks.js');
-const { humanDuration } = require('../util.js');
+const { humanDuration } = require('@douile/bot-utilities');
 
 const reactions = [emojis.upvote, emojis.downvote];
 

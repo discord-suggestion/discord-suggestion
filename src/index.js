@@ -2,7 +2,7 @@ const Discord = require('discord.js');
 const fs = require('fs').promises;
 
 const StorageWithDefault = require('./structs/StorageWithDefault.js');
-const { errorWrap, is, isOfBaseType } = require('./util.js');
+const { errorWrap, is, isOfBaseType } = require('@douile/bot-utilities');
 const { setDebugFlag, debugLog, verbooseLog } = require('./debug.js');
 const WaitManager = require('./structs/WaitManager.js');
 const Poll = require('./structs/Poll.js');

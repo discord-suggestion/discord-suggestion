@@ -1,7 +1,7 @@
 const { RichEmbed } = require('discord.js');
 
 const constants = require('../../constants.js');
-const { hasAny } = require('../../util.js');
+const { hasAny } = require('@douile/bot-utilities');
 const { verbooseLog } = require('../../debug.js');
 const { FLAGS } = require('../flags.js');
 

@@ -1,6 +1,6 @@
 const { Message, TextChannel, Guild, RichEmbed } = require('discord.js');
 
-const { numberEmoji, errorWrap, isOfBaseType } = require('../util.js');
+const { numberEmoji, errorWrap, isOfBaseType } = require('@douile/bot-utilities');
 const { debugLog } = require('../debug.js');
 
 const REACTION_LOOKUP = {};

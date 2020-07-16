@@ -1,5 +1,5 @@
 const { combineAny, isAdmin, isPollWhitelisted } = require('../checks.js');
-const { parseTime, isOfBaseType, is } = require('../util.js');
+const { parseTime, isOfBaseType, is } = require('@douile/bot-utilities');
 const Poll = require('../structs/Poll.js');
 const { verbooseLog } = require('../debug.js');
 
