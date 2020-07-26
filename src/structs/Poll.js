@@ -1,6 +1,6 @@
 const { Message, TextChannel, Guild, RichEmbed } = require('discord.js');
 
-const { numberEmoji, errorWrap, isOfBaseType } = require('@douile/bot-utilities');
+const { numberEmoji, errorWrap, isOfBaseType, allSettled } = require('@douile/bot-utilities');
 const { debugLog } = require('../debug.js');
 
 const REACTION_LOOKUP = {};
@@ -35,6 +35,10 @@ class Poll {
     if (this.__message instanceof Message) {
       return Promise.resolve(this.__message);
     }
+    return this.fetchMessage(); // No promise cached fetch from API
+  }
+
+  fetchMessage() {
     const poll = this;
     return new Promise((resolve, reject) => {
       poll.channel.then((channel) => {
@@ -121,16 +125,18 @@ class Poll {
   async end() {
     if (this.client.waitManager.has(this._message)) this.client.waitManager.clearTimeout(this._message);
     if (this.ended) return await this.delete();
-    const message = await this.message;
+    const message = await this.fetchMessage(); // Fetch from API so is up to date
     let counts = [];
     let total = 0;
+    let clearReactions = [];
     for (let reaction of message.reactions.values()) {
+      // Only handle a reaction if it is in the lookup table (1 - 10)
       if (reaction.emoji.name in REACTION_LOOKUP) {
         counts.push({ option: REACTION_LOOKUP[reaction.emoji.name], count: reaction.count-1 });
         total += reaction.count-1;
+        clearReactions.push(reaction.removeAll()); // Remove specific reaction
       }
     }
-    await message.clearReactions();
     counts = counts.sort((a,b) => b.count-a.count);
     await message.edit(new RichEmbed({
       title: this.title,
@@ -141,6 +147,7 @@ class Poll {
       color: this.color,
       fields: counts.map((v) => {return { name: `${total > 0 ? Math.round(v.count/total*1000)/10 : 0}% (${v.count})`, value: this.options[v.option] }})
     }));
+    await allSettled(clearReactions);
     this.ended = true;
     await this.delete();
   }
