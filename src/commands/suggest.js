@@ -129,6 +129,7 @@ const call = async function(message, params) {
       return guildData;
     });
     console.log(`Deleted ${deleted} dead suggestion topics`);
+    if (channelsToDelete.length === channels.length) await message.channel.send('Sorry all the suggestion channels with that topic have been deleted');
   }
 
 }
