@@ -126,6 +126,7 @@ const call = async function(message, params) {
         let didDelete = delete guildData.channels[toDelete];
         deleted += didDelete & 1;
       }
+      return guildData;
     });
     console.log(`Deleted ${deleted} dead suggestion topics`);
   }
