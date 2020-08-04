@@ -53,11 +53,13 @@ const callChannel = async function(message, params) {
     });
     await embedResponse(message, `Creating suggestion channel <#${channel.id}> with topic "${topic}"`);
   } else {
+    let deleted = false;
     await message.client.guildStore.update(message.guild.id, function(guild) {
+      deleted = channel.id in guild.channels;
       delete guild.channels[channel.id];
       return guild;
     });
-    await embedResponse(message, `Removed suggestion channel <#${channel.id}>`);
+    await embedResponse(message, `${deleted ? 'Removed suggestion channel' : 'No such suggestion channel'} <#${channel.id}>`);
   }
 }
 
