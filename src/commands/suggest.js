@@ -9,7 +9,7 @@ const reactions = [emojis.upvote, emojis.downvote];
 
 const call = async function(message, params) {
   if (params.length < 2) {
-    return await nessage.channel.send(new RichEmbed({
+    return await message.channel.send(new RichEmbed({
       title: 'Input error',
       description: 'Please specify a topic and a suggestion',
       color: 0xff0000
