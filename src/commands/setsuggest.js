@@ -35,31 +35,34 @@ const errorResponse = async function(message, response) {
 
 const callChannel = async function(message, params) {
   const isAdd = addOrRemove(params);
-  let channel = message.channel, topic = undefined;
+  let channel = undefined, topic = undefined;
   for (let param of params) {
     const tChannel = is.discordChannel(param);
     if (tChannel !== undefined) {
-      if (message.guild.channels.has(tChannel)) channel = message.guild.channels.get(tChannel);
+      channel = tChannel;
     } else {
       topic = param;
     }
   }
 
+  if (channel === undefined) return await errorResponse(message, 'You must provide a #channel or channel snowflake ID');
+
   if (isAdd)  {
     if (topic === undefined) return await errorResponse(message, 'You must provide a topic when creating a status channel');
+    if (!message.guild.channels.has(channel)) return await errorResponse(message, 'The channel must be a valid channel');
     await message.client.guildStore.update(message.guild.id, function(guild) {
-      guild.channels[channel.id] = { topic: topic };
+      guild.channels[channel] = { topic: topic };
       return guild;
     });
-    await embedResponse(message, `Creating suggestion channel <#${channel.id}> with topic "${topic}"`);
+    await embedResponse(message, `Creating suggestion channel <#${channel}> with topic "${topic}"`);
   } else {
     let deleted = false;
     await message.client.guildStore.update(message.guild.id, function(guild) {
-      deleted = channel.id in guild.channels;
-      delete guild.channels[channel.id];
+      deleted = channel in guild.channels;
+      delete guild.channels[channel];
       return guild;
     });
-    await embedResponse(message, `${deleted ? 'Removed suggestion channel' : 'No such suggestion channel'} <#${channel.id}>`);
+    await embedResponse(message, `${deleted ? 'Removed suggestion channel' : 'No such suggestion channel'} <#${channel}>`);
   }
 }
 
