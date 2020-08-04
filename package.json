@@ -1,6 +1,6 @@
 {
   "name": "discord-suggestion",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "A standalone discord bot that allows you to easily create suggestion channels and polls",
   "main": "index.js",
   "author": "Douile",
