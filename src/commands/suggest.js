@@ -8,34 +8,57 @@ const { humanDuration } = require('@douile/bot-utilities');
 const reactions = [emojis.upvote, emojis.downvote];
 
 const call = async function(message, params) {
-  if (params.length < 2) return;
+  if (params.length < 2) {
+    return await nessage.channel.send(new RichEmbed({
+      title: 'Input error',
+      description: 'Please specify a topic and a suggestion',
+      color: 0xff0000
+    }));
+  }
+
   const topic = params.splice(0, 1)[0].toLowerCase();
 
   const guild = message.client.guildStore.get(message.guild.id);
-  let channel = Object.entries(guild.channels).filter(v => v[1].topic.toLowerCase() === topic);
-  if (channel.length > 0) {
-    let nextTime = undefined;
-    const now = Date.now();
-    await message.client.guildStore.update(message.guild.id, function(guildData) {
-      const rate = isNaN(guildData.suggestionRate) ? message.client.config.suggestionRate : guildData.suggestionRate;
-      if (message.author.id in guildData.users) {
-        const t = guildData.users[message.author.id].lastSuggestion + rate;
-        if (t > now) {
-          nextTime = t;
-        } else {
-          guildData.users[message.author.id].lastSuggestion = now;
-        }
-      } else {
-        guildData.users[message.author.id] = { lastSuggestion: now };
-      }
-      return guildData;
-    });
+  let channels = Object.entries(guild.channels).filter(v => v[1].topic.toLowerCase() === topic);
 
-    if (nextTime !== undefined) return await message.channel.send(`Sorry you must wait ${humanDuration(nextTime-now)} seconds before creating another suggestion`);
+  if (channels.length === 0) {
+    return await message.channel.send(new RichEmbed({
+      title: `Sorry there is no suggestion channel for that topic`,
+      description: `Valid topics: ${Object.values(guild.channels).map(v => `\`${v.topic}\``).join(', ')}`,
+      color: 0xff0000
+    }));
+  }
+
+  let nextTime = undefined;
+  const now = Date.now();
+  await message.client.guildStore.update(message.guild.id, function(guildData) {
+    const rate = isNaN(guildData.suggestionRate) ? message.client.config.suggestionRate : guildData.suggestionRate;
+    if (message.author.id in guildData.users) {
+      const t = guildData.users[message.author.id].lastSuggestion + rate;
+      if (t > now) {
+        nextTime = t;
+      } else {
+        guildData.users[message.author.id].lastSuggestion = now;
+      }
+    } else {
+      guildData.users[message.author.id] = { lastSuggestion: now };
+    }
+    return guildData;
+  });
+
+  if (nextTime !== undefined) return await message.channel.send(`Sorry you must wait ${humanDuration(nextTime-now)} seconds before creating another suggestion`);
+
+  let channelsToDelete = [];
+
+  for (let channelData of channels) {
+    let channel = message.guild.channels.get(channelData[0]);
+    if (channel === undefined || channel.deleted) {
+      channelsToDelete.push(channelData[0]);
+      continue;
+    }
 
     const rMessage = await message.channel.send('Creating suggestion...');
-    const channelTopic = channel[0][1].topic;
-    channel = message.guild.channels.get(channel[0][0]);
+    const channelTopic = channelData[1].topic;
 
     const suggestion = params.join(' ');
 
@@ -67,7 +90,9 @@ const call = async function(message, params) {
     if (attachments.length > 0) {
       embed.setDescription(`${suggestion}\n\n**Attachments**\n${attachments.join('\n')}`);
     }
+
     if (!hasImage) {
+      /// If embed doesn't already have image check whether attachment is image and add it
       // Thanks regexr regexr.com/2ri7q
       const matches = suggestion.match(/((\w+:\/\/)[-a-zA-Z0-9:@;?&=/%+.*!'(),$_{}^~[\]`#|]+)/g);
       if (matches !== null) {
@@ -91,12 +116,20 @@ const call = async function(message, params) {
       await sMessage.react(r);
     }
     await rMessage.edit(`Suggestion created <https://discordapp.com/channels/${sMessage.guild.id}/${sMessage.channel.id}/${sMessage.id}>`);
-  } else {
-    await message.channel.send(new RichEmbed({
-      title: `Sorry there is no suggestion channel for that topic`,
-      description: `Valid topics: ${Object.values(guild.channels).map(v => `\`${v.topic}\``).join(', ')}`
-    }));
   }
+
+  if (channelsToDelete.length > 0) {
+    console.log(`Found ${channelsToDelete.length} dead suggestion topics: ${channelsToDelete}`);
+    let deleted = 0;
+    await message.client.guildStore.update(message.guild.id, function(guildData) {
+      for (let toDelete of channelsToDelete) {
+        let didDelete = delete guildData.channels[toDelete];
+        deleted += didDelete & 1;
+      }
+    });
+    console.log(`Deleted ${deleted} dead suggestion topics`);
+  }
+
 }
 
 exports.name = 'suggest';
