@@ -12,18 +12,20 @@ exports.isBotOwner = function(message) {
   return message.client.config.owner === message.author.id;
 }
 
-exports.isNotBlacklisted = function(message) {
-  if (!message.member) return false;
-  for (let role of message.client.guildStore.get(message.guild.id).blacklist) {
-    if (message.member.roles.has(role)) return false;
+exports.isNotBlacklisted = async function(message) {
+  if (!message.channel.guild) return false;
+  const member = await message.channel.guild.fetchMember(message.author);
+  for (let role of message.client.guildStore.get(message.channel.guild.id).blacklist) {
+    if (member.roles.has(role)) return false;
   }
   return true;
 }
 
-exports.isPollWhitelisted = function(message) {
-  if (!message.member) return false;
-  for (let role of message.client.guildStore.get(message.guild.id).pollWhitelist) {
-    if (message.member.roles.has(role)) return true;
+exports.isPollWhitelisted = async function(message) {
+  if (!message.channel.guild) return false;
+  const member = await message.channel.guild.fetchMember(message.author);
+  for (let role of message.client.guildStore.get(message.channel.guild.id).pollWhitelist) {
+    if (member.roles.has(role)) return true;
   }
   return false;
 }

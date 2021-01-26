@@ -110,7 +110,7 @@ client.on(Discord.Constants.Events.MESSAGE_CREATE, errorWrap(async function(mess
 
     let cmd = client.commands.get(command);
 
-    if (!(cmd.check instanceof Function) || cmd.check(message)) {
+    if (!(cmd.check instanceof Function) || await cmd.check(message)) {
       try {
         await cmd.call(message, parts);
       } catch(e) {
