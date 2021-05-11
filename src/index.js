@@ -12,13 +12,8 @@ const { AsyncFunction } = require('./constants.js');
 const INVITE_FLAGS = [ 'VIEW_AUDIT_LOG', 'VIEW_CHANNEL', 'SEND_MESSAGES', 'MANAGE_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY', 'ADD_REACTIONS' ];
 
 const client = new Discord.Client({
-  apiRequestMethod: 'sequential',
-  disableEveryone: true,
-  restTimeOffset: 100,
+  disableMentions: 'everyone',
   disabledEvents: [ 'TYPING_START', 'VOICE_STATE_UPDATE', 'VOICE_SERVER_UPDATE', 'WEBHOOKS_UPDATE' ],
-  ws: {
-    compress: true
-  }
 });
 
 const GUILD_DEFAULTS = {
