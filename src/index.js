@@ -135,7 +135,7 @@ client.on('raw', errorWrap(async function(data) {
 }));
 
 
-client.on(Discord.Constants.Events.READY, errorWrap(async function() {
+client.on(Discord.Constants.Events.CLIENT_READY, errorWrap(async function() {
   console.log(`[READY] Logged in ${client.user.username} [${client.user.id}]...`);
   let invite = await client.generateInvite(INVITE_FLAGS);
   console.log(`[READY] Invite link ${invite}`);

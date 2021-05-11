@@ -12,9 +12,9 @@ const call = async function(message) {
     description: `[${Package.name} v${Package.version}](${Package.homepage}) [Report bugs here](${Package.bugs.url})\n\
     Average ping: ${Math.round(client.ws.ping,2)}ms\n\
     Uptime: ${humanDuration(client.uptime)}\n\
-    Working in ${client.guilds.size} guilds\n\
+    Working in ${client.guilds.cache.size} guilds\n\
     **Dependencies**\n\
-    [NodeJS v ${process.version}](https://nodejs.org)\n\
+    [NodeJS ${process.version}](https://nodejs.org)\n\
     [discord.js v${DiscordVersion}](https://discord.js.org})`,
     timestamp: Date.now()
   }))
