@@ -1,4 +1,4 @@
-const { RichEmbed } = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
 
 const { emojis } = require('../constants.js');
@@ -9,7 +9,7 @@ const reactions = [emojis.upvote, emojis.downvote];
 
 const call = async function(message, params) {
   if (params.length < 2) {
-    return await message.channel.send(new RichEmbed({
+    return await message.channel.send(new MessageEmbed({
       title: 'Input error',
       description: 'Please specify a topic and a suggestion',
       color: 0xff0000
@@ -22,7 +22,7 @@ const call = async function(message, params) {
   let channels = Object.entries(guild.channels).filter(v => v[1].topic.toLowerCase() === topic);
 
   if (channels.length === 0) {
-    return await message.channel.send(new RichEmbed({
+    return await message.channel.send(new MessageEmbed({
       title: `Sorry there is no suggestion channel for that topic`,
       description: `Valid topics: ${Object.values(guild.channels).map(v => `\`${v.topic}\``).join(', ')}`,
       color: 0xff0000
@@ -51,7 +51,7 @@ const call = async function(message, params) {
   let channelsToDelete = [];
 
   for (let channelData of channels) {
-    let channel = message.guild.channels.get(channelData[0]);
+    let channel = message.guild.channels.resolve(channelData[0]);
     if (channel === undefined || channel.deleted) {
       channelsToDelete.push(channelData[0]);
       continue;
@@ -62,7 +62,7 @@ const call = async function(message, params) {
 
     const suggestion = params.join(' ');
 
-    const embed = new RichEmbed({
+    const embed = new MessageEmbed({
       author: { name: message.author.username, icon_url: message.author.avatarURL },
       title: `${channelTopic} suggestion`,
       description: suggestion,

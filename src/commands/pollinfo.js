@@ -1,9 +1,9 @@
-const { RichEmbed } = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 
 const { isAdmin } = require('../checks.js');
 const { humanDuration } = require('@douile/bot-utilities');
 
-const EMBED_NO_POLLS = new RichEmbed({ title: 'Active polls', description: 'No active polls in this server'});
+const EMBED_NO_POLLS = new MessageEmbed({ title: 'Active polls', description: 'No active polls in this server'});
 
 const call = async function(message) {
   if (!message.client.guildStore.has(message.guild.id)) return await message.channel.send(EMBED_NO_POLLS);
@@ -19,7 +19,7 @@ const call = async function(message) {
   const count = Math.ceil(fields.length / 25);
   let i = 1;
   while (fields.length > 0) {
-    await message.channel.send(new RichEmbed({
+    await message.channel.send(new MessageEmbed({
       title: 'Active polls',
       fields: fields.splice(0, 25),
       footer: { text: `${i++}/${count}` }

@@ -1,4 +1,4 @@
-const { RichEmbed } = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 
 const { isOfBaseType } = require('@douile/bot-utilities');
 
@@ -13,7 +13,7 @@ const call = async function(message, parts) {
   const search = parts.map(s => new RegExp(s, 'gi'));
   if (search.length === 0) {
     const matched = {};
-    await message.channel.send(new RichEmbed({
+    await message.channel.send(new MessageEmbed({
       title: 'Help',
       description: Array.from(message.client.commands.values())
         .filter(cmd => {
@@ -40,7 +40,7 @@ const call = async function(message, parts) {
         }
         return false;
       });
-    await message.channel.send(new RichEmbed({
+    await message.channel.send(new MessageEmbed({
       title: 'Help',
       description: matches.length === 0 ? `Sorry no commands matched the pattern \`${parts.join(' ')}\` (_commands you don't have access to will not appear_)\nYou can list all the commands you have access to with \`${message.client.config.prefix}help\`` : undefined,
       fields:

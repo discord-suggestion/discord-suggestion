@@ -1,4 +1,4 @@
-const { Message, TextChannel, Guild, RichEmbed } = require('discord.js');
+const { Message, TextChannel, Guild, MessageEmbed } = require('discord.js');
 
 const { numberEmoji, errorWrap, isOfBaseType, allSettled } = require('@douile/bot-utilities');
 const { debugLog } = require('../debug.js');
@@ -42,11 +42,7 @@ class Poll {
     const poll = this;
     return new Promise((resolve, reject) => {
       poll.channel.then((channel) => {
-        if (channel.messages.has(poll._message)) {
-          poll.__message = channel.messages.get(poll._message);
-          return resolve(poll.__message);
-        }
-        channel.fetchMessage(poll._message).then((message) => {
+        channel.messages.fetch(poll._message).then((message) => {
           poll.__message = message;
           resolve(message);
         }).catch(reject);
@@ -68,8 +64,8 @@ class Poll {
     const poll = this;
     return new Promise((resolve, reject) => {
       poll.guild.then((guild) => {
-        if (guild.channels.has(poll._channel)) {
-          poll.__channel = guild.channels.get(poll._channel);
+        if (guild.channels.cache.has(poll._channel)) {
+          poll.__channel = guild.channels.resolve(poll._channel);
           return resolve(poll.__channel);
         }
         reject(new Error(`Could not find channel ${this._channel}`));
@@ -88,11 +84,13 @@ class Poll {
     if (this.__guild instanceof Guild) {
       return Promise.resolve(this.__guild);
     }
-    if (this.client.guilds.has(this._guild)) {
-      this.__guild = this.client.guilds.get(this._guild);
-      return Promise.resolve(this.__guild);
-    }
-    return Promise.reject(new Error(`Could not find guild ${this._guild}`));
+    const poll = this;
+    return new Promise((resolve, reject) => {
+      this.client.guilds.fetch(this._guild).then((guild) => {
+        poll.__guild = guild;
+        return resolve(guild);
+      }).catch(reject);
+    });
   }
 
   set guild(guild) {
@@ -105,7 +103,7 @@ class Poll {
 
   async send() {
     const channel = await this.channel;
-    const message = await channel.send(new RichEmbed({
+    const message = await channel.send(new MessageEmbed({
       title: this.title,
       author: await this.fetchAuthor(),
       footer: { text: 'Finishes' },
@@ -128,17 +126,15 @@ class Poll {
     const message = await this.fetchMessage(); // Fetch from API so is up to date
     let counts = [];
     let total = 0;
-    let clearReactions = [];
-    for (let reaction of message.reactions.values()) {
+    for (let reaction of message.reactions.cache.values()) {
       // Only handle a reaction if it is in the lookup table (1 - 10)
       if (reaction.emoji.name in REACTION_LOOKUP) {
         counts.push({ option: REACTION_LOOKUP[reaction.emoji.name], count: reaction.count-1 });
         total += reaction.count-1;
-        clearReactions.push(reaction.removeAll()); // Remove specific reaction
       }
     }
     counts = counts.sort((a,b) => b.count-a.count);
-    await message.edit(new RichEmbed({
+    await message.edit(new MessageEmbed({
       title: this.title,
       author: await this.fetchAuthor(),
       description: this.description,
@@ -147,19 +143,15 @@ class Poll {
       color: this.color,
       fields: counts.map((v) => {return { name: `${total > 0 ? Math.round(v.count/total*1000)/10 : 0}% (${v.count})`, value: this.options[v.option] }})
     }));
-    await allSettled(clearReactions);
+    await message.reactions.removeAll();
     this.ended = true;
     await this.delete();
   }
 
   async fetchAuthor() {
     if (!isOfBaseType(this.author, String)) return;
-    if (this.client.users.has(this.author)) {
-      const user = this.client.users.get(this.author);
-      return { name: user.username, icon_url: user.avatarURL || 'https://discord.com/assets/322c936a8c8be1b803cd94861bdfa868.png' };
-    }
     try {
-      const user = await this.client.fetchUser(this.author);
+      const user = await this.client.users.fetch(this.author);
       return { name: user.username, icon_url: user.avatarURL || 'https://discord.com/assets/322c936a8c8be1b803cd94861bdfa868.png' };
     } catch(e) {
       debugLog(e);

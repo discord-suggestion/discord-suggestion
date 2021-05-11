@@ -14,18 +14,18 @@ exports.isBotOwner = function(message) {
 
 exports.isNotBlacklisted = async function(message) {
   if (!message.channel.guild) return false;
-  const member = await message.channel.guild.fetchMember(message.author);
+  const member = await message.channel.guild.members.fetch(message.author);
   for (let role of message.client.guildStore.get(message.channel.guild.id).blacklist) {
-    if (member.roles.has(role)) return false;
+    if (member.roles.cache.has(role)) return false;
   }
   return true;
 }
 
 exports.isPollWhitelisted = async function(message) {
   if (!message.channel.guild) return false;
-  const member = await message.channel.guild.fetchMember(message.author);
+  const member = await message.channel.guild.members.fetch(message.author);
   for (let role of message.client.guildStore.get(message.channel.guild.id).pollWhitelist) {
-    if (member.roles.has(role)) return true;
+    if (member.roles.cache.has(role)) return true;
   }
   return false;
 }

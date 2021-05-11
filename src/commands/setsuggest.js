@@ -1,7 +1,7 @@
-const { RichEmbed } = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 
 const { commandSymbols } = require('../constants.js');
-const { isAdmin } = require('../checks.js');
+const { combineAny, isOwner, isBotOwner, isAdmin } = require('../checks.js');
 const { is, isOfBaseType } = require('@douile/bot-utilities');
 
 /* Check if 1st param is add/remove and if it is remove the param (defaults to add) */
@@ -26,7 +26,7 @@ const embedResponse = async function(message, response, opts) {
   for (let key in DEFAULTS) {
     if (!(key in opts)) opts[key] = DEFAULTS[key];
   }
-  return await message.channel.send(new RichEmbed(opts));
+  return await message.channel.send(new MessageEmbed(opts));
 }
 
 const errorResponse = async function(message, response) {
@@ -49,7 +49,7 @@ const callChannel = async function(message, params) {
 
   if (isAdd)  {
     if (topic === undefined) return await errorResponse(message, 'You must provide a topic when creating a status channel');
-    if (!message.guild.channels.has(channel)) return await errorResponse(message, 'The channel must be a valid channel');
+    if (!message.guild.channels.cache.has(channel)) return await errorResponse(message, 'The channel must be a valid channel');
     await message.client.guildStore.update(message.guild.id, function(guild) {
       guild.channels[channel] = { topic: topic };
       return guild;
@@ -72,7 +72,7 @@ const roleManageTemplate = function(key, name) {
     let roles = [];
     for (let param of params) {
       const tRole = is.discordRole(param);
-      if (tRole !== undefined && message.guild.roles.has(tRole)) roles.push(tRole);
+      if (tRole !== undefined && message.guild.roles.cache.has(tRole)) roles.push(tRole);
     }
     if (roles.length === 0) return await errorResponse(message, `You must provide at least 1 role to add to ${name}`);
     if (isAdd) {
@@ -187,8 +187,10 @@ const generateHelp = function(title, commands) {
   return message;
 }
 
+const help = generateHelp('**Configure suggestion options**', SUBCOMMANDS); 
+
 const call = async function(message, params) {
-  if (params.length === 0) return;
+  if (params.length === 0) return await message.channel.send(help);
   const subcmd = params.splice(0,1)[0].toLowerCase();
   for (let cmd in SUBCOMMANDS) {
     if (SUBCOMMANDS[cmd].cmds.includes(subcmd)) {
@@ -201,5 +203,5 @@ const call = async function(message, params) {
 exports.name = 'settings';
 exports.alias = [ 'setting', 'settings', 'setsuggest' ];
 exports.call = call;
-exports.check = isAdmin;
-exports.help = generateHelp('**Configure suggestion options**', SUBCOMMANDS);
+exports.check = combineAny(isOwner, isAdmin, isBotOwner);
+exports.help = help; 
